@@ -2482,3 +2482,112 @@ button {
   border-radius: 10px;
 }
 .scanner-not-found p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+
+/* ══════════════════════════════════════
+   PIN GATE OVERLAY
+══════════════════════════════════════ */
+.pingate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 18, 14, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.pingate-card {
+  width: min(340px, 100%);
+  padding: 24px 20px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(23, 33, 29, 0.28);
+}
+
+.pingate-icon {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.pingate-title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.pingate-sub {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.pingate-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pingate-tab {
+  flex: 1;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pingate-tab.is-active {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+
+.pingate-input {
+  text-align: center !important;
+  font-size: 1.5rem !important;
+  letter-spacing: 0.25em;
+}
+
+.pingate-error {
+  margin: 8px 0 0;
+  font-size: 0.83rem;
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════
+   OTP DISPLAY (Settings)
+══════════════════════════════════════ */
+.otp-display {
+  padding: 14px 16px;
+  background: #e6fcf5;
+  border: 1px solid #c3fae8;
+  border-radius: 12px;
+}
+
+.otp-code {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--green);
+  font-family: 'Courier New', monospace;
+}
+
+.otp-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.otp-timer {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green);
+}

@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, useState } from 'react'
+import { getOrCreateCloudMeta, pushState } from './sync.js'
 
 const ACTIVE_KEY = 'ulahia-active-profile'
 const profileKey = id => `ulahia-profile-${id}`
@@ -12,6 +13,8 @@ const starterState = {
   transactions: [],
   customers: [],
   cart: [],
+  inventoryPin: null,
+  inventoryOtp: null,
 }
 
 // ─── Helper for transaction time offsets ─────────────────────────────────────
@@ -460,6 +463,8 @@ const demoState = {
   transactions: DEMO_TRANSACTIONS,
   customers: DEMO_CUSTOMERS,
   cart: [],
+  inventoryPin: null,
+  inventoryOtp: null,
 }
 
 function loadState(profileId) {
@@ -510,6 +515,8 @@ function loadState(profileId) {
           }))
       }
       if (!saved.cart) saved.cart = []
+      if (saved.inventoryPin === undefined) saved.inventoryPin = null
+      if (saved.inventoryOtp === undefined) saved.inventoryOtp = null
       saved.cart = saved.cart.map(i =>
         i.cartItemId ? i : { ...i, cartItemId: i.productId || crypto.randomUUID() }
       )
@@ -733,6 +740,15 @@ function reducer(state, action) {
     case 'LOAD_PROFILE':
       return action.payload
 
+    case 'SET_INVENTORY_PIN':
+      return { ...state, inventoryPin: action.payload }
+
+    case 'SET_INVENTORY_OTP':
+      return { ...state, inventoryOtp: action.payload }
+
+    case 'CLEAR_INVENTORY_OTP':
+      return { ...state, inventoryOtp: null }
+
     default:
       return state
   }
@@ -748,6 +764,16 @@ export function StoreProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
+  }, [state, activeProfile])
+
+  // Cloud sync: debounced push on every main-profile state change
+  useEffect(() => {
+    if (activeProfile !== 'main' || !state.setupDone) return
+    const meta = getOrCreateCloudMeta()
+    const timer = setTimeout(() => {
+      pushState(meta.profileId, meta.recoveryCode, state)
+    }, 2000)
+    return () => clearTimeout(timer)
   }, [state, activeProfile])
 
   function switchProfile(targetId) {

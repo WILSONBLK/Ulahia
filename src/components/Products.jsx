@@ -4,6 +4,7 @@ import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
+import { usePinGate } from './PinGate.jsx'
 import ProductForm from './ProductForm.jsx'
 import RestockModal from './RestockModal.jsx'
 import BarcodeScanner from './BarcodeScanner.jsx'
@@ -24,6 +25,7 @@ export default function Products() {
   const { openModal } = useModal()
   const showToast = useToast()
   const t = useLang()
+  const { requirePin } = usePinGate()
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   function deleteProduct(id, name) {
@@ -35,9 +37,9 @@ export default function Products() {
   function ProductActions({ p }) {
     return (
       <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-        <button className="button light" style={btnSm} onClick={() => openModal(<ProductForm product={p} />)}>Edit</button>
+        <button className="button light" style={btnSm} onClick={() => requirePin(() => openModal(<ProductForm product={p} />))}>Edit</button>
         {confirmDeleteId === p.id
-          ? <button className="button" style={{ ...btnSm, background: 'var(--red)' }} onClick={() => deleteProduct(p.id, p.name)}>Sure?</button>
+          ? <button className="button" style={{ ...btnSm, background: 'var(--red)' }} onClick={() => requirePin(() => deleteProduct(p.id, p.name))}>Sure?</button>
           : <button className="button light" style={{ ...btnSm, color: 'var(--red)' }} onClick={() => setConfirmDeleteId(p.id)}>Delete</button>
         }
       </div>
@@ -57,7 +59,7 @@ export default function Products() {
   return (
     <div className="screen-content">
       <div className="screen-top-actions" style={{ flexWrap: 'wrap', gap: 8 }}>
-        <button className="button" onClick={() => openModal(<ProductForm />)}>
+        <button className="button" onClick={() => requirePin(() => openModal(<ProductForm />))}>
           + {t('addProduct')}
         </button>
         <button
@@ -103,7 +105,7 @@ export default function Products() {
                     {!isOut && isLow && <span className="pill warn" style={{ fontSize: '0.72rem' }}>{t('lowStock')}</span>}
                     <button
                       className="restock-btn"
-                      onClick={() => openModal(<RestockModal product={p} />)}
+                      onClick={() => requirePin(() => openModal(<RestockModal product={p} />))}
                     >
                       {t('restock')}
                     </button>
@@ -139,7 +141,7 @@ export default function Products() {
                       }
                       <button
                         className="restock-btn"
-                        onClick={() => openModal(<RestockModal product={p} />)}
+                        onClick={() => requirePin(() => openModal(<RestockModal product={p} />))}
                       >
                         Restock
                       </button>

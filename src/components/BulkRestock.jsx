@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
+import { usePinGate } from './PinGate.jsx'
 
 function getRecoveryPct(product, transactions) {
   if (product.type !== 'flexible' || !product.invested) return 0
@@ -15,6 +16,7 @@ function getRecoveryPct(product, transactions) {
 export default function BulkRestock() {
   const { state, dispatch } = useStore()
   const showToast = useToast()
+  const { requirePin } = usePinGate()
   const [values, setValues] = useState({})
   const [filter, setFilter] = useState('all')
 
@@ -22,7 +24,7 @@ export default function BulkRestock() {
     setValues(v => ({ ...v, [productId]: val }))
   }
 
-  function apply() {
+  function applyRestock() {
     const updates = Object.entries(values)
       .filter(([, v]) => v && Number(v) > 0)
       .map(([productId, v]) => {
@@ -36,6 +38,10 @@ export default function BulkRestock() {
     dispatch({ type: 'BULK_RESTOCK', payload: updates })
     showToast(`${updates.length} product${updates.length > 1 ? 's' : ''} restocked!`)
     setValues({})
+  }
+
+  function apply() {
+    requirePin(applyRestock)
   }
 
   const fixed = state.products.filter(p => !p.type || p.type === 'fixed')

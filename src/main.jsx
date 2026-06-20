@@ -5,13 +5,16 @@ import App from './App.jsx'
 import { StoreProvider } from './store.jsx'
 import { ToastProvider } from './toast.jsx'
 import { ModalProvider } from './modal.jsx'
+import { PinGateProvider } from './components/PinGate.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <StoreProvider>
       <ToastProvider>
         <ModalProvider>
-          <App />
+          <PinGateProvider>
+            <App />
+          </PinGateProvider>
         </ModalProvider>
       </ToastProvider>
     </StoreProvider>
