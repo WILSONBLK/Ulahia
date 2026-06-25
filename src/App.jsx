@@ -2,7 +2,8 @@ import { useStore } from './store.jsx'
 import { useOnline } from './useOnline.js'
 import { useLang } from './useLang.js'
 import TopBar from './components/TopBar.jsx'
-import Setup from './components/Setup.jsx'
+import LandingAuth from './components/LandingAuth.jsx'
+import Onboarding from './components/Onboarding.jsx'
 import Home from './components/Home.jsx'
 import POSScreen from './components/POSScreen.jsx'
 import Customers from './components/Customers.jsx'
@@ -28,7 +29,7 @@ export default function App() {
   const online = useOnline()
   const t = useLang()
 
-  if (!state.setupDone) return <Setup />
+  if (!state.setupDone) return <LandingAuth />
 
   const View = VIEWS[state.view] || Home
   const isHome = state.view === 'home'
@@ -47,6 +48,8 @@ export default function App() {
     </div>
   )
 
+  const onboarding = !state.onboardingDone && <Onboarding />
+
   // Home and POS handle their own headers
   if (isHome || isPOS) {
     return (
@@ -54,6 +57,7 @@ export default function App() {
         {offlineBanner}
         <View />
         <BottomNav />
+        {onboarding}
       </div>
     )
   }
@@ -68,6 +72,7 @@ export default function App() {
         </main>
       </div>
       <BottomNav />
+      {onboarding}
     </div>
   )
 }

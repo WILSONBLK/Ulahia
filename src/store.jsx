@@ -18,6 +18,7 @@ const starterState = {
   darkMode: false,
   highContrast: false,
   pinnedProducts: [],
+  onboardingDone: false,
 }
 
 // ─── Helper for transaction time offsets ─────────────────────────────────────
@@ -471,6 +472,7 @@ const demoState = {
   darkMode: false,
   highContrast: false,
   pinnedProducts: [],
+  onboardingDone: true,
 }
 
 function loadState(profileId) {
@@ -530,6 +532,10 @@ function loadState(profileId) {
       if (saved.darkMode === undefined) saved.darkMode = false
       if (saved.highContrast === undefined) saved.highContrast = false
       if (!saved.pinnedProducts) saved.pinnedProducts = []
+      if (saved.onboardingDone === undefined) {
+        // Existing users who already have products skip onboarding
+        saved.onboardingDone = Array.isArray(saved.products) && saved.products.length > 0
+      }
       saved.products = saved.products.map(p => p.type ? p : { ...p, type: 'fixed' })
       saved.transactions = saved.transactions.map(t => ({
         ...t,
@@ -775,6 +781,9 @@ function reducer(state, action) {
 
     case 'RESTORE_PRODUCT':
       return { ...state, products: [action.payload, ...state.products] }
+
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, onboardingDone: true, view: 'home' }
 
     default:
       return state
