@@ -12,6 +12,63 @@
   --shadow: 0 16px 38px rgba(23, 33, 29, 0.1);
 }
 
+/* ── Dark mode ── */
+.app--dark {
+  --ink: #e8f0ec;
+  --muted: #8aada0;
+  --line: #2a3830;
+  --bg: #111a15;
+  --panel: #1a2720;
+  --green: #0ca678;
+  --green-2: #12d89a;
+  --shadow: 0 16px 38px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+.app--dark body,
+.app--dark .home-screen,
+.app--dark .pos-screen,
+.app--dark .modal,
+.app--dark .modal-backdrop.is-open {
+  background: var(--bg);
+  color: var(--ink);
+}
+.app--dark .topbar,
+.app--dark .home-header,
+.app--dark .pos-header { background: var(--bg); border-color: var(--line); }
+.app--dark .tabs-mobile { background: #1a2720; border-color: var(--line); }
+.app--dark .modal { background: #1e2e27; }
+.app--dark .select,
+.app--dark .field { background: #1e2e27; color: var(--ink); border-color: var(--line); }
+.app--dark .button.light { background: #1e2e27; border-color: var(--line); color: var(--ink); }
+.app--dark .prod-row,
+.app--dark .cust-card,
+.app--dark .pos-product-row,
+.app--dark .txn-row,
+.app--dark .home-tile,
+.app--dark .home-settings-row,
+.app--dark .home-today,
+.app--dark .report-card { background: #1e2e27; border-color: var(--line); }
+.app--dark .pos-products { background: #1a2720; }
+.app--dark .pos-checkout-bar { background: #1e2e27; border-color: var(--green); }
+.app--dark .list-row, .app--dark .debt-row { background: #1e2e27; }
+
+/* ── High-contrast mode ── */
+.app--hc {
+  --ink: #000000;
+  --muted: #444444;
+  --line: #aaaaaa;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --green: #005a3c;
+  --green-2: #007a52;
+  --red: #bb0000;
+  --shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.app--hc .home-sell-btn { background: #005a3c; box-shadow: 0 4px 12px rgba(0,90,60,0.4); }
+.app--hc .button { background: #005a3c; }
+.app--hc .label, .app--hc .section-kicker { color: #000; }
+.app--hc .field, .app--hc .select { border-width: 2px; border-color: #000; }
+
 * {
   box-sizing: border-box;
 }
@@ -21,6 +78,7 @@ body {
   color: var(--ink);
   background: var(--bg);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 17px;
   letter-spacing: 0;
 }
 
@@ -78,13 +136,13 @@ button {
 .topbar-back {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
   background: white;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -126,8 +184,9 @@ button {
 .select,
 .field {
   width: 100%;
-  min-height: 48px;
-  padding: 0 12px;
+  min-height: 52px;
+  padding: 0 14px;
+  font-size: 1rem;
   color: var(--ink);
   background: white;
   border: 1px solid var(--line);
@@ -135,12 +194,13 @@ button {
 }
 
 .button {
-  min-height: 48px;
-  padding: 0 16px;
+  min-height: 52px;
+  padding: 0 18px;
   border: 0;
   border-radius: 8px;
   color: white;
   background: var(--green);
+  font-size: 1rem;
   font-weight: 800;
   box-shadow: 0 8px 18px rgba(8, 127, 91, 0.18);
 }
@@ -175,7 +235,16 @@ button {
   gap: 22px;
   width: min(1220px, 100%);
   margin: 0 auto;
-  padding: 22px clamp(14px, 4vw, 34px) 40px;
+  padding: 22px clamp(14px, 4vw, 34px) 90px;
+}
+
+/* Screen fade-in transition */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.view-enter {
+  animation: fadeSlideIn 0.22s ease both;
 }
 
 .sidebar {
@@ -975,9 +1044,9 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--line);
-  min-height: 72px;
+  min-height: 80px;
 }
 
 .pos-product-row.out-of-stock {
@@ -991,7 +1060,7 @@ button {
 
 .pos-product-name {
   display: block;
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 700;
 }
 
@@ -2590,4 +2659,216 @@ button {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--green);
+}
+
+/* ══════════════════════════════════════
+   TOAST WITH UNDO
+══════════════════════════════════════ */
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toast-undo-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.toast-undo-btn:hover { background: rgba(255,255,255,0.15); }
+
+/* ══════════════════════════════════════
+   PIN / FAVOURITE BUTTON (POS)
+══════════════════════════════════════ */
+.pos-pin-btn {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.pos-pin-btn.is-pinned {
+  color: #f59f00;
+  background: #fff9db;
+  border-color: #ffd43b;
+}
+
+.pos-pinned-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #f0faf5;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════════════
+   QUICK QTY INPUT (POS)
+══════════════════════════════════════ */
+.qty-quick-input {
+  width: 52px;
+  height: 44px;
+  border: 2px solid var(--green);
+  border-radius: 6px;
+  background: #e6fcf5;
+  color: var(--green);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* ══════════════════════════════════════
+   LOW STOCK BANNER (Home)
+══════════════════════════════════════ */
+.home-lowstock-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.home-lowstock-banner:active { background: #ffe3e3; }
+.home-lowstock-icon { font-size: 1.4rem; flex-shrink: 0; }
+.home-lowstock-text { flex: 1; }
+.home-lowstock-text strong { display: block; font-size: 0.95rem; color: var(--red); font-weight: 800; }
+.home-lowstock-text span { display: block; font-size: 0.8rem; color: #b83333; margin-top: 2px; }
+.home-lowstock-arrow { color: var(--red); font-size: 1.2rem; }
+
+/* ══════════════════════════════════════
+   CLOSE-OF-DAY MODAL
+══════════════════════════════════════ */
+.cod-modal { display: flex; flex-direction: column; gap: 16px; }
+.cod-title { margin: 0 0 4px; font-size: 1.3rem; }
+.cod-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cod-card {
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.cod-card span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.cod-card strong {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+.cod-card--profit strong { color: var(--green); }
+.cod-card--sales { grid-column: span 2; background: white; }
+.cod-card--sales strong { font-size: 1.5rem; }
+
+/* ══════════════════════════════════════
+   THEME TOGGLE BUTTONS (Home header)
+══════════════════════════════════════ */
+.theme-toggles {
+  display: flex;
+  gap: 6px;
+}
+.theme-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.theme-btn.is-active { background: var(--green); border-color: var(--green); }
+
+/* ══════════════════════════════════════
+   DISCOUNT FIELD (Checkout)
+══════════════════════════════════════ */
+.co-discount-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.co-discount-btn {
+  min-height: 44px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.co-discount-btn.is-active {
+  border-color: var(--green);
+  background: #e6fcf5;
+  color: var(--green);
+}
+.co-discount-savings {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #e6fcf5;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════
+   PROFIT LABEL (POS per product)
+══════════════════════════════════════ */
+.pos-profit-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+/* ══════════════════════════════════════
+   BOTTOM NAV (all screens)
+══════════════════════════════════════ */
+.tabs-mobile button {
+  font-size: 0.7rem;
+}
+.tabs-mobile .nav-label {
+  font-size: 0.7rem;
+}
+
+/* ══════════════════════════════════════
+   HOME SCREEN — extra bottom padding for nav
+══════════════════════════════════════ */
+.home-screen {
+  padding-bottom: 90px !important;
 }

@@ -10,6 +10,7 @@ import Products from './components/Products.jsx'
 import Reports from './components/Reports.jsx'
 import Settings from './components/Settings.jsx'
 import BulkRestock from './components/BulkRestock.jsx'
+import BottomNav from './components/BottomNav.jsx'
 
 const VIEWS = {
   home: Home,
@@ -33,35 +34,40 @@ export default function App() {
   const isHome = state.view === 'home'
   const isPOS = state.view === 'sell'
 
+  const appClass = [
+    'app',
+    state.darkMode ? 'app--dark' : '',
+    state.highContrast ? 'app--hc' : '',
+  ].filter(Boolean).join(' ')
+
+  const offlineBanner = !online && (
+    <div className="offline is-visible">
+      {t('offline')}
+      <button className="button light" onClick={() => window.location.reload()}>Try again</button>
+    </div>
+  )
+
   // Home and POS handle their own headers
   if (isHome || isPOS) {
     return (
-      <div className="app">
-        {!online && (
-          <div className="offline is-visible">
-            {t('offline')}
-            <button className="button light" onClick={() => window.location.reload()}>Try again</button>
-          </div>
-        )}
+      <div className={appClass}>
+        {offlineBanner}
         <View />
+        <BottomNav />
       </div>
     )
   }
 
   return (
-    <div className="app">
-      {!online && (
-        <div className="offline is-visible">
-          {t('offline')}
-          <button className="button light" onClick={() => window.location.reload()}>Try again</button>
-        </div>
-      )}
+    <div className={appClass}>
+      {offlineBanner}
       <TopBar />
       <div className="layout">
-        <main className="main">
+        <main className="main view-enter">
           <View />
         </main>
       </div>
+      <BottomNav />
     </div>
   )
 }

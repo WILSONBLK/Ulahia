@@ -15,6 +15,9 @@ const starterState = {
   cart: [],
   inventoryPin: null,
   inventoryOtp: null,
+  darkMode: false,
+  highContrast: false,
+  pinnedProducts: [],
 }
 
 // ─── Helper for transaction time offsets ─────────────────────────────────────
@@ -465,6 +468,9 @@ const demoState = {
   cart: [],
   inventoryPin: null,
   inventoryOtp: null,
+  darkMode: false,
+  highContrast: false,
+  pinnedProducts: [],
 }
 
 function loadState(profileId) {
@@ -521,6 +527,9 @@ function loadState(profileId) {
         i.cartItemId ? i : { ...i, cartItemId: i.productId || crypto.randomUUID() }
       )
       if (saved.setupDone === undefined) saved.setupDone = true
+      if (saved.darkMode === undefined) saved.darkMode = false
+      if (saved.highContrast === undefined) saved.highContrast = false
+      if (!saved.pinnedProducts) saved.pinnedProducts = []
       saved.products = saved.products.map(p => p.type ? p : { ...p, type: 'fixed' })
       saved.transactions = saved.transactions.map(t => ({
         ...t,
@@ -748,6 +757,24 @@ function reducer(state, action) {
 
     case 'CLEAR_INVENTORY_OTP':
       return { ...state, inventoryOtp: null }
+
+    case 'TOGGLE_DARK_MODE':
+      return { ...state, darkMode: !state.darkMode }
+
+    case 'TOGGLE_HIGH_CONTRAST':
+      return { ...state, highContrast: !state.highContrast }
+
+    case 'TOGGLE_PIN_PRODUCT': {
+      const id = action.payload
+      const pinned = state.pinnedProducts || []
+      return {
+        ...state,
+        pinnedProducts: pinned.includes(id) ? pinned.filter(p => p !== id) : [...pinned, id],
+      }
+    }
+
+    case 'RESTORE_PRODUCT':
+      return { ...state, products: [action.payload, ...state.products] }
 
     default:
       return state

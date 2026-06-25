@@ -5,10 +5,11 @@ import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
 import CustomerSearch from './CustomerSearch.jsx'
+import ReceiptModal from './ReceiptModal.jsx'
 
 export default function CheckoutModal() {
   const { state, dispatch } = useStore()
-  const { closeModal } = useModal()
+  const { closeModal, openModal } = useModal()
   const showToast = useToast()
   const t = useLang()
 
@@ -16,12 +17,25 @@ export default function CheckoutModal() {
   const [transferConfirmed, setTransferConfirmed] = useState(false)
   const [customer, setCustomer] = useState(null)
   const [amountReceived, setAmountReceived] = useState('')
+  const [discountType, setDiscountType] = useState(null) // null | 'percent' | 'flat'
+  const [discountValue, setDiscountValue] = useState('')
 
-  const items = state.cart.map(i => ({ ...i, subtotal: i.price * i.qty }))
-  const total = items.reduce((sum, i) => sum + i.subtotal, 0)
+  const rawItems = state.cart.map(i => ({ ...i, subtotal: i.price * i.qty }))
+  const rawTotal = rawItems.reduce((sum, i) => sum + i.subtotal, 0)
+
+  const discountAmount = (() => {
+    if (!discountType || !discountValue) return 0
+    const v = Number(discountValue)
+    if (!v || v <= 0) return 0
+    if (discountType === 'percent') return Math.round(rawTotal * Math.min(v, 100) / 100)
+    return Math.min(v, rawTotal)
+  })()
+
+  const items = rawItems
+  const total = Math.max(0, rawTotal - discountAmount)
   const profit = items
     .filter(i => i.type === 'fixed')
-    .reduce((sum, i) => sum + (i.price - i.cost) * i.qty, 0)
+    .reduce((sum, i) => sum + (i.price - i.cost) * i.qty, 0) - discountAmount
 
   const cashReceived = amountReceived !== '' ? Number(amountReceived) : total
   const change = mode === 'cash' ? Math.max(0, cashReceived - total) : 0
@@ -57,12 +71,33 @@ export default function CheckoutModal() {
       finalBalance = balance
     }
 
+    const transaction = {
+      id: crypto.randomUUID(),
+      time: new Date().toISOString(),
+      items,
+      total,
+      profit: Math.max(0, profit),
+      mode,
+      customerId: customer?.id || null,
+      customerName: customer?.name || '',
+      customerPhone: customer?.phone || '',
+      amountPaid,
+      balance: finalBalance,
+    }
+
     dispatch({
       type: 'COMPLETE_TRANSACTION',
-      payload: { items, total, profit, mode, customer, amountPaid, balance: finalBalance },
+      payload: { items, total, profit: Math.max(0, profit), mode, customer, amountPaid, balance: finalBalance },
     })
+
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80])
+
     closeModal()
     showToast(`Sale of ${money(total)} recorded!`)
+
+    // Auto-show receipt after a brief pause so modal closes cleanly
+    setTimeout(() => openModal(<ReceiptModal transaction={transaction} />), 120)
   }
 
   function formatItem(item) {
@@ -89,8 +124,45 @@ export default function CheckoutModal() {
         ))}
         <div className="co-total-line">
           <span>{t('total')}</span>
-          <strong>{money(total)}</strong>
+          <strong>{money(rawTotal)}</strong>
         </div>
+      </div>
+
+      {/* Discount */}
+      <div className="co-section">
+        <div className="co-label">Discount <span style={{ fontWeight: 400, color: 'var(--muted)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+        <div className="co-discount-row">
+          <button
+            className={`co-discount-btn${discountType === 'percent' ? ' is-active' : ''}`}
+            onClick={() => { setDiscountType(discountType === 'percent' ? null : 'percent'); setDiscountValue('') }}
+          >
+            % Off
+          </button>
+          <button
+            className={`co-discount-btn${discountType === 'flat' ? ' is-active' : ''}`}
+            onClick={() => { setDiscountType(discountType === 'flat' ? null : 'flat'); setDiscountValue('') }}
+          >
+            ₦ Off
+          </button>
+        </div>
+        {discountType && (
+          <div style={{ marginTop: 10 }}>
+            <input
+              className="field"
+              type="number"
+              min="0"
+              placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 500'}
+              value={discountValue}
+              onChange={e => setDiscountValue(e.target.value)}
+              autoFocus
+            />
+            {discountAmount > 0 && (
+              <div className="co-discount-savings">
+                Save {money(discountAmount)} — New total: <strong>{money(total)}</strong>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Payment mode — 3 options */}

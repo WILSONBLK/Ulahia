@@ -29,9 +29,12 @@ export default function Products() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   function deleteProduct(id, name) {
+    const product = state.products.find(p => p.id === id)
     dispatch({ type: 'DELETE_PRODUCT', payload: id })
     setConfirmDeleteId(null)
-    showToast(`${name} removed.`)
+    showToast(`${name} removed.`, {
+      undo: () => dispatch({ type: 'RESTORE_PRODUCT', payload: product }),
+    })
   }
 
   function ProductActions({ p }) {

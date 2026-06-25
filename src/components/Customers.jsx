@@ -147,13 +147,30 @@ export default function Customers() {
                   {c.totalBalance > 0 ? money(c.totalBalance) : '✓ Cleared'}
                 </strong>
                 {c.totalBalance > 0 && (
-                  <button
-                    className="button secondary"
-                    style={{ minHeight: 38, padding: '0 14px', fontSize: '0.9rem' }}
-                    onClick={() => openModal(<PaymentModal customer={c} />)}
-                  >
-                    {t('paid')}
-                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="button secondary"
+                      style={{ minHeight: 38, padding: '0 14px', fontSize: '0.9rem' }}
+                      onClick={() => openModal(<PaymentModal customer={c} />)}
+                    >
+                      {t('paid')}
+                    </button>
+                    {c.phone && (
+                      <button
+                        className="button"
+                        style={{ minHeight: 38, padding: '0 10px', fontSize: '0.88rem', background: '#25D366' }}
+                        title="Send WhatsApp reminder"
+                        onClick={() => {
+                          const raw = c.phone.replace(/\D/g, '')
+                          const num = raw.startsWith('0') ? '234' + raw.slice(1) : raw
+                          const msg = `Hello ${c.name}, this is a reminder that you owe ${money(c.totalBalance)}. Kindly pay when you can. Thank you!`
+                          window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank')
+                        }}
+                      >
+                        💬
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
