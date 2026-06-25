@@ -48,31 +48,34 @@ export default function App() {
     </div>
   )
 
-  const onboarding = !state.onboardingDone && <Onboarding />
+  // Check both store flag and localStorage so the tour never repeats
+  // even if the component tree remounts for any reason
+  const showOnboarding =
+    !state.onboardingDone &&
+    localStorage.getItem('ulahia-ob-done') !== '1'
 
-  // Home and POS handle their own headers
-  if (isHome || isPOS) {
-    return (
-      <div className={appClass}>
-        {offlineBanner}
-        <View />
-        <BottomNav />
-        {onboarding}
-      </div>
-    )
-  }
-
+  // Single return keeps <Onboarding /> at a stable tree position so React
+  // never unmounts/remounts it when the view changes (which would reset step state)
   return (
     <div className={appClass}>
       {offlineBanner}
-      <TopBar />
-      <div className="layout">
-        <main className="main view-enter">
-          <View />
-        </main>
-      </div>
+
+      {(isHome || isPOS)
+        ? <View />
+        : (
+          <>
+            <TopBar />
+            <div className="layout">
+              <main className="main view-enter">
+                <View />
+              </main>
+            </div>
+          </>
+        )
+      }
+
       <BottomNav />
-      {onboarding}
+      {showOnboarding && <Onboarding />}
     </div>
   )
 }

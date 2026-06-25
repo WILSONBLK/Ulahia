@@ -980,6 +980,7 @@ button {
   height: 100dvh;
   overflow: hidden;
   background: var(--bg);
+  padding-bottom: 70px; /* clear fixed bottom nav */
 }
 
 .pos-back-btn {
@@ -3207,19 +3208,124 @@ button {
 }
 
 /* ══════════════════════════════════════
-   ONBOARDING OVERLAY
+   ONBOARDING — SPOTLIGHT TOUR
 ══════════════════════════════════════ */
+
+/* Dark shade (fallback when target not found) */
+.ob-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  animation: obFadeIn 0.25s ease;
+}
+
+/* Spotlight "hole" — sits over the target element.
+   The giant box-shadow darkens everything outside it. */
+.ob-spotlight {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+  outline: 2.5px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 1px;
+  animation: obSpotIn 0.3s ease;
+}
+
+/* Tooltip card */
+.ob-tooltip {
+  position: fixed;
+  z-index: 9001;
+  background: white;
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  animation: obFadeIn 0.25s ease;
+}
+
+/* Arrow pointing UP = tooltip is below the target */
+.ob-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.ob-arrow--up {
+  top: -13px;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-bottom: 13px solid white;
+  filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.08));
+}
+/* Arrow pointing DOWN = tooltip is above the target */
+.ob-arrow--down {
+  bottom: -13px;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 13px solid white;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.08));
+}
+
+/* Step counter */
+.ob-counter {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #087f5b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ob-counter--card {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Tooltip contents */
+.ob-tip-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.ob-tip-title {
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #087f5b;
+  margin: 0;
+  line-height: 1.2;
+}
+.ob-tip-body {
+  font-size: 0.91rem;
+  line-height: 1.62;
+  color: var(--text);
+  margin: 0;
+  white-space: pre-line;
+}
+.ob-tip-next {
+  width: 100%;
+  min-height: 48px;
+  background: #087f5b;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s;
+}
+.ob-tip-next:hover { background: #065a40; }
 
 /* ── Card steps (full-screen) ── */
 .ob-card {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 9002;
   background: var(--ob-color, #087f5b);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px 24px;
   animation: obFadeIn 0.35s ease;
 }
 .ob-card-inner {
@@ -3229,147 +3335,67 @@ button {
   text-align: center;
   max-width: 400px;
   width: 100%;
-  gap: 12px;
+  gap: 14px;
 }
 .ob-card-icon {
-  font-size: 4rem;
+  font-size: 4.2rem;
   line-height: 1;
-  margin-bottom: 4px;
 }
 .ob-card-title {
-  font-size: 1.7rem;
+  font-size: 1.75rem;
   font-weight: 900;
   color: white;
   margin: 0;
   line-height: 1.2;
 }
 .ob-card-body {
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.65;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.92);
   margin: 0;
   white-space: pre-line;
 }
-
-/* ── Live steps (bottom sheet over real app) ── */
-.ob-live-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  animation: obFadeIn 0.3s ease;
-}
-.ob-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  pointer-events: auto;
-}
-.ob-sheet {
-  position: relative;
-  background: white;
-  border-radius: 24px 24px 0 0;
-  padding: 20px 20px 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  max-height: 60dvh;
-  overflow-y: auto;
-  pointer-events: auto;
-  box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
-}
-.ob-sheet-icon {
-  font-size: 2.6rem;
-  line-height: 1;
-  margin-top: 4px;
-}
-.ob-sheet-title {
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: var(--text);
-  margin: 0;
-  line-height: 1.3;
-}
-.ob-sheet-body {
-  font-size: 0.97rem;
-  line-height: 1.65;
-  color: var(--text);
-  margin: 0;
-  white-space: pre-line;
-  text-align: left;
-}
-
-/* Progress dots */
-.ob-step-dots {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-.ob-sheet-dots { margin-top: 4px; }
-.ob-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  transition: background 0.2s;
-}
-.ob-card .ob-dot { background: rgba(255,255,255,0.35); }
-.ob-card .ob-dot--active { background: white; }
-.ob-sheet .ob-dot { background: var(--line); }
-.ob-sheet .ob-dot--active { background: #087f5b; }
-
-/* Next / confirm button */
-.ob-next-btn {
-  width: 100%;
-  min-height: 58px;
+.ob-card-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   font-size: 1.05rem;
   font-weight: 800;
+  min-height: 56px;
+  padding: 0 32px;
   border-radius: 14px;
+  cursor: pointer;
+  min-width: 220px;
+  transition: background 0.15s;
   margin-top: 4px;
 }
-.ob-card .ob-next-btn {
-  background: rgba(255,255,255,0.22);
-  color: white;
-  border: 2px solid rgba(255,255,255,0.5);
-}
-.ob-card .ob-next-btn:hover { background: rgba(255,255,255,0.35); }
+.ob-card-btn:hover { background: rgba(255, 255, 255, 0.35); }
 
-/* Step counter */
-.ob-step-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  opacity: 0.6;
-  color: inherit;
-}
-.ob-card .ob-step-label { color: white; }
-
-/* Skip button */
+/* Skip button (always top-right) */
 .ob-skip-btn {
   position: fixed;
-  top: 12px;
+  top: 14px;
   right: 16px;
-  z-index: 10000;
+  z-index: 9003;
   border: none;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.38);
   color: white;
   font-size: 0.85rem;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 8px 15px;
   border-radius: 20px;
   cursor: pointer;
   min-height: unset;
   transition: background 0.15s;
 }
-.ob-skip-btn:hover { background: rgba(0,0,0,0.55); }
+.ob-skip-btn:hover { background: rgba(0, 0, 0, 0.6); }
 
 @keyframes obFadeIn {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes obSpotIn {
+  from { box-shadow: 0 0 0 9999px rgba(0,0,0,0); }
+  to   { box-shadow: 0 0 0 9999px rgba(0,0,0,0.62); }
 }
 

@@ -101,7 +101,7 @@ export default function Settings() {
       </section>
 
       {cloudMeta && (
-        <section className="panel" style={{ marginTop: 16 }}>
+        <section className="panel" data-tour="cloud-section" style={{ marginTop: 16 }}>
           <h3 style={{ margin: '0 0 8px' }}>Cloud Backup</h3>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 14px', lineHeight: 1.5 }}>
             Your data syncs automatically every time you make a change. If you switch phones, enter this code on the new device to restore everything.

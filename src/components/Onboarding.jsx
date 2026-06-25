@@ -1,282 +1,391 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store.jsx'
 
+const OB_STEP_KEY = 'ulahia-ob-step'
+const OB_DONE_KEY = 'ulahia-ob-done'
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Steps definition
-// type 'card'  → full-screen slide (no real app behind it)
-// type 'live'  → bottom-sheet overlay over the real app (navigates to `view`)
+// Step definitions
+// type 'card'  → full-screen coloured slide
+// type 'spot'  → spotlight on a DOM element + tooltip with arrow
 // ─────────────────────────────────────────────────────────────────────────────
 const STEPS = [
-  // 1 — Welcome
+  // 0 ─ Welcome
   {
     type: 'card',
     color: '#087f5b',
     icon: '👋',
     title: 'Welcome to Ulahia!',
-    body: 'I am going to teach you everything you need to know, step by step.\n\nThis will take about 2 minutes. Let\'s go!',
-    btn: 'Start the Tour →',
+    body: 'Let me show you every button and screen, one at a time.\n\nThis takes about 2 minutes. After that you will know exactly how to use the app.',
+    btn: 'Show Me Around →',
   },
 
-  // 2 — Home screen live
+  // 1 ─ Home: Big Sell button
   {
-    type: 'live',
+    type: 'spot',
     view: 'home',
-    icon: '🏠',
-    title: 'This is Your Home Screen',
-    body: 'Every morning, open Ulahia here. You will see how much money you made today, your profit, and how many sales you recorded.\n\nTap the summary bar to see a full close-of-day report.',
+    target: '.home-sell-btn',
+    icon: '💰',
+    title: 'The Sell Button',
+    body: 'This is your most important button.\n\nEvery time a customer buys something — tap this. It takes you to the sell screen where you record what they bought and how they paid.',
   },
 
-  // 3 — Language switcher
+  // 2 ─ Home: Today summary bar
   {
-    type: 'live',
+    type: 'spot',
     view: 'home',
+    target: '.home-today',
+    icon: '📋',
+    title: "Today's Summary",
+    body: 'This bar shows your total sales and profit for today.\n\nTap anywhere on it to see a full close-of-day report — cash received, bank transfers, and how much was given on credit.',
+  },
+
+  // 3 ─ Home: 4 navigation tiles
+  {
+    type: 'spot',
+    view: 'home',
+    target: '.home-grid',
+    icon: '🗂️',
+    title: '4 Quick Tiles',
+    body: 'These tiles are shortcuts:\n\n👥 Customers — who bought from you\n📋 Debts — who owes you money\n📦 Products — your goods and stock\n📊 Reports — your profit history\n\nTap any tile to go straight there.',
+  },
+
+  // 4 ─ Home: Settings row
+  {
+    type: 'spot',
+    view: 'home',
+    target: '.home-settings-row',
+    icon: '⚙️',
+    title: 'Settings Button',
+    body: 'Tap here to open Settings where you can:\n\n• Change your shop name or phone number\n• Set a PIN to protect your data\n• Find your Recovery Code\n• Download a backup of all your data',
+  },
+
+  // 5 ─ Home: Language selector
+  {
+    type: 'spot',
+    view: 'home',
+    target: '.home-lang',
     icon: '🌍',
-    title: 'Change Your Language',
-    body: 'Do you see the language button at the top right of the Home screen?\n\nTap it to switch between English, Pidgin, Yoruba, Igbo, and Hausa. Ulahia speaks YOUR language!',
+    title: 'Language Selector',
+    body: 'Tap this to switch Ulahia to your language:\n\nPidgin · English · Yoruba · Igbo · Hausa\n\nThe entire app switches to that language immediately.',
   },
 
-  // 4 — Dark mode
+  // 6 ─ Home: Theme toggles
   {
-    type: 'live',
+    type: 'spot',
     view: 'home',
+    target: '.theme-toggles',
     icon: '🌙',
-    title: 'Make It Easier on Your Eyes',
-    body: 'Tap the 🌙 button to turn on Dark Mode — it makes the screen darker, which is easier to read in the evening.\n\nTap 🔆 for High Contrast mode — the text becomes very bold and clear.',
+    title: 'Display Modes',
+    body: '🔆 High Contrast — makes text much bigger and bolder. Great for reading in bright sunlight or if small text is hard to see.\n\n🌙 Dark Mode — turns the screen dark. Easier on your eyes at night or in dim places.',
   },
 
-  // 5 — Bottom nav card
+  // 7 ─ Bottom nav
+  {
+    type: 'spot',
+    view: 'home',
+    target: '.tabs-mobile',
+    icon: '📱',
+    title: 'Bottom Navigation Bar',
+    body: 'These 6 buttons are ALWAYS at the bottom, no matter which screen you are on:\n\n🏠 Home  💰 Sell  📦 Products\n👥 Customers  📊 Reports  ⚙️ Settings\n\nTap any one to jump there instantly.',
+  },
+
+  // 8 ─ POS: Search bar
+  {
+    type: 'spot',
+    view: 'sell',
+    target: '.pos-search',
+    icon: '🔍',
+    title: 'Search Bar',
+    body: 'Type a product name here and the list filters immediately.\n\nFor example, type "rice" and only rice products show. Very useful when you have many different goods.',
+  },
+
+  // 9 ─ POS: Product row
+  {
+    type: 'spot',
+    view: 'sell',
+    target: '.pos-product-row',
+    fallback: true,
+    icon: '📦',
+    title: 'Product Rows',
+    body: 'Each row shows one product you sell.\n\n• Tap "+ Add" to put it in your cart\n• Tap "−" or "+" to adjust the quantity\n• Tap the number itself to type an exact quantity\n• The green +₦ shows your profit per item sold',
+  },
+
+  // 10 ─ POS: Pin button
+  {
+    type: 'spot',
+    view: 'sell',
+    target: '.pos-pin-btn',
+    fallback: true,
+    icon: '⭐',
+    title: 'Pin Your Best Sellers',
+    body: 'See the ☆ star on each product?\n\nTap it to PIN that product to the very top of the list.\n\nPin the items you sell most often so you can reach them with one tap — no scrolling needed.',
+  },
+
+  // 11 ─ Payment methods card
   {
     type: 'card',
-    color: '#0077B6',
-    icon: '📱',
-    title: 'The Buttons at the Bottom',
-    body: 'See the row of buttons at the very bottom?\n\n🏠 Home — your daily summary\n💰 Sell — make a sale\n📦 Products — your goods\n👥 Customers — who owes you\n📊 Reports — your profit history\n⚙️ Settings — your account\n\nTap any one to go there instantly.',
+    color: '#1864ab',
+    icon: '💳',
+    title: 'How Did They Pay?',
+    body: 'When you tap SELL, a checkout window opens. You choose how the customer paid:\n\n💵 Cash — they paid with cash\n📲 Transfer — they sent money to your bank\n📋 Credit — they will pay later (goes into Debts)\n\nYou can also split the payment — part cash, part credit.',
     btn: 'Got it! Continue →',
   },
 
-  // 6 — POS screen live
-  {
-    type: 'live',
-    view: 'sell',
-    icon: '💰',
-    title: 'Making a Sale',
-    body: 'This is where you record every sale.\n\nYou will see all your products listed here. TAP a product to add it to your cart. The number next to it shows how many you are selling.\n\nYou can tap a product many times to add more pieces.',
-  },
-
-  // 7 — Search and pin
-  {
-    type: 'live',
-    view: 'sell',
-    icon: '🔍',
-    title: 'Find Products Fast',
-    body: 'Have many products? Type a few letters in the search box at the top and the list will filter immediately.\n\nTap the ☆ star next to a product to PIN it — pinned products always show at the top so you can reach them faster.',
-  },
-
-  // 8 — Cart and checkout
-  {
-    type: 'live',
-    view: 'sell',
-    icon: '🛒',
-    title: 'Your Cart & Checking Out',
-    body: 'Once you tap some products, they appear in the cart on the right side (or below on small phones).\n\nTap a quantity number in the cart to type the exact amount.\n\nWhen ready, tap the big green SELL button to complete the sale.',
-  },
-
-  // 9 — Payment methods card
+  // 12 ─ Discounts and receipts card
   {
     type: 'card',
-    color: '#2D6A4F',
-    icon: '💳',
-    title: 'How Did They Pay?',
-    body: 'When you tap SELL, you choose how the customer paid:\n\n💵 Cash — they gave you cash\n📲 Transfer — they sent money to your account\n📋 Credit — they will pay later (goes into Customers)\n\nYou can also split! For example: part cash and part credit.',
-    btn: 'Next →',
-  },
-
-  // 10 — Discounts
-  {
-    type: 'card',
-    color: '#6D2B8C',
+    color: '#6741d9',
     icon: '🏷️',
-    title: 'Giving a Discount',
-    body: 'Inside the checkout window, look for the Discount section.\n\nTap % Off to reduce by a percentage (e.g. 10% off).\nTap ₦ Off to remove a fixed amount (e.g. ₦500 off).\n\nUlahia will show the new total and how much the customer is saving.',
-    btn: 'Next →',
+    title: 'Discounts & Receipts',
+    body: 'Inside the checkout window, there is a Discount section:\n\n• % Off — reduce by a percentage (e.g. 10% off)\n• ₦ Off — remove a fixed amount (e.g. ₦500 off)\n\nAfter every sale, a receipt appears automatically. You can send it to the customer on WhatsApp or download it as an image.',
+    btn: 'Got it! Continue →',
   },
 
-  // 11 — Receipt
+  // 13 ─ Products: Add button
   {
-    type: 'card',
-    color: '#1A6B4A',
-    icon: '🧾',
-    title: 'Sending a Receipt',
-    body: 'After every sale, a receipt appears automatically.\n\nYou can:\n📤 Share it on WhatsApp — the customer gets a picture of their receipt\n💾 Download it as an image\n\nThe receipt shows all the items, the total, and your shop name.',
-    btn: 'Next →',
-  },
-
-  // 12 — Products screen
-  {
-    type: 'live',
+    type: 'spot',
     view: 'products',
-    icon: '📦',
-    title: 'Managing Your Products',
-    body: 'Here you add, edit, and delete your products.\n\nTap + Add Product to add a new item. Fill in:\n• Product name\n• Selling price\n• Cost price (what you paid for it)\n• How many you have (quantity)\n• Low-stock alert level\n\nUlahia uses these to track your profit automatically.',
+    target: '.screen-top-actions .button',
+    icon: '➕',
+    title: 'Add Product Button',
+    body: 'Tap here to add a new product to your shop.\n\nYou will fill in:\n• Product name (e.g. Rice 50kg)\n• Selling price — what you charge customers\n• Cost price — what you paid for it\n• Current stock quantity\n• Low-stock alert level',
   },
 
-  // 13 — Low stock
+  // 14 ─ Products: Stock bar
   {
-    type: 'live',
+    type: 'spot',
     view: 'products',
-    icon: '⚠️',
-    title: 'Low Stock Alerts',
-    body: 'See the coloured bars under each product?\n\n🔴 Red bar = out of stock\n🟡 Yellow bar = running low (check this!)\n🟢 Green bar = you have enough\n\nWhen a product goes low, a red banner also appears on your Home screen to remind you to restock.',
-  },
-
-  // 14 — Customers screen
-  {
-    type: 'live',
-    view: 'customers',
-    icon: '👥',
-    title: 'People Who Owe You',
-    body: 'Every time you sell on Credit, the customer\'s name and amount appears here automatically.\n\nYou can see:\n• How much each person owes\n• Their total debt\n• A history of all their purchases\n\nWhen they pay, tap Mark as Paid.',
-  },
-
-  // 15 — WhatsApp reminder
-  {
-    type: 'live',
-    view: 'customers',
-    icon: '📲',
-    title: 'Send a WhatsApp Reminder',
-    body: 'For each customer who owes you, there is a WhatsApp button.\n\nTap it and a pre-written message will open in WhatsApp:\n\n"Hello [Name], this is a reminder that you owe ₦[amount]. Kindly pay when you can. Thank you!"\n\nYou just tap Send — no typing needed!',
-  },
-
-  // 16 — Reports
-  {
-    type: 'live',
-    view: 'reports',
+    target: '.prod-bar-wrap',
+    fallback: true,
     icon: '📊',
-    title: 'Your Business Reports',
-    body: 'Reports show you the full picture of your business.\n\n• Today — what you made today\n• This Week — the last 7 days\n• This Month — the full month\n\nYou can see total sales, total profit, how many transactions, and which products sold the most.',
+    title: 'Stock Level Bars',
+    body: 'The coloured bar under each product shows how much stock is left:\n\n🟢 Green — you have plenty\n🟡 Yellow — running low, time to restock!\n🔴 Red — out of stock\n\nWhen a product goes yellow or red, a warning banner also appears on your Home screen.',
   },
 
-  // 17 — Settings / recovery code
+  // 15 ─ Customers
   {
-    type: 'live',
-    view: 'settings',
-    icon: '⚙️',
-    title: 'Your Settings & Recovery Code',
-    body: 'In Settings, you can change your shop name, PIN code, and see your Recovery Code.\n\n🔑 Your Recovery Code is VERY IMPORTANT. Write it down and keep it safe.\n\nIf you get a new phone, you use your phone number + Recovery Code to get all your data back.',
+    type: 'spot',
+    view: 'customers',
+    target: '.cust-card',
+    fallback: true,
+    icon: '👥',
+    title: 'Customer Cards',
+    body: 'Everyone who buys on Credit appears here automatically.\n\nEach card shows:\n• Name and amount owed\n• "Paid" button — tap when they pay you back\n• 💬 WhatsApp button — sends them an automatic payment reminder\n\n"Hello [Name], you owe ₦[amount]. Please pay when you can."',
   },
 
-  // 18 — Going back
+  // 16 ─ Reports
+  {
+    type: 'spot',
+    view: 'reports',
+    target: '.report-periods',
+    icon: '📊',
+    title: 'Report Period Buttons',
+    body: 'Tap these to change the time period:\n\n• Today — just today\n• This Week — last 7 days\n• This Month — the whole month\n• All Time — your full history\n\nBelow you see totals, cash vs transfer vs credit breakdown, and your best-selling products.',
+  },
+
+  // 17 ─ Settings: Recovery code
+  {
+    type: 'spot',
+    view: 'settings',
+    target: '[data-tour="cloud-section"]',
+    fallback: true,
+    icon: '🔑',
+    title: 'Your Recovery Code',
+    body: 'Scroll down in Settings to find Cloud Backup. Your Recovery Code is shown there — a 6-letter code like "AB3X9Z".\n\n⚠️ WRITE IT DOWN or take a photo of it.\n\nIf you ever get a new phone, you use your phone number + this code to get ALL your data back. Without it, your data cannot be recovered.',
+  },
+
+  // 18 ─ Going back card
   {
     type: 'card',
     color: '#37474F',
     icon: '←',
     title: 'How to Go Back',
-    body: 'On any inner page (like when editing a product), you will see a ← Back button at the top left.\n\nTap it to return to the previous screen.\n\nOr just tap the Home button at the bottom to go straight to your Home screen.',
+    body: 'Whenever you open a form or detail page — like editing a product or viewing a customer — you will see a ← Back button at the top left.\n\nTap it to return without saving.\n\nOr just tap the 🏠 Home button at the bottom to go straight back to your Home screen.',
     btn: 'Almost done! →',
   },
 
-  // 19 — Done!
+  // 19 ─ Done
   {
     type: 'card',
     color: '#087f5b',
     icon: '🎉',
-    title: 'You Are Ready!',
-    body: 'You now know everything about Ulahia.\n\nHere is how to begin:\n1️⃣ Go to Products and add your items\n2️⃣ Go to Sell when a customer buys something\n3️⃣ Check Home every morning to see your progress\n\nWelcome to your new shop book!',
-    btn: '🚀 Let\'s Start!',
+    title: "You're Ready!",
+    body: 'You now know every button in Ulahia!\n\nTo get started:\n1️⃣ Tap Products → "+ Add Product"\n2️⃣ Add all your goods with prices and stock\n3️⃣ Tap Sell whenever a customer buys\n\nUlahia tracks everything from there. Good luck!',
+    btn: '🚀 Start Using Ulahia!',
     isLast: true,
   },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Card step — full screen
+// Hook: measures a DOM element's bounding rect after a short delay
+// ─────────────────────────────────────────────────────────────────────────────
+function useTargetRect(selector) {
+  const [result, setResult] = useState(null) // null = measuring
+
+  useEffect(() => {
+    setResult(null)
+    const t = setTimeout(() => {
+      const el = selector ? document.querySelector(selector) : null
+      if (el) {
+        setResult({ found: true, rect: el.getBoundingClientRect() })
+      } else {
+        setResult({ found: false })
+      }
+    }, 260)
+    return () => clearTimeout(t)
+  }, [selector])
+
+  return result
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Compute tooltip position relative to target rect
+// ─────────────────────────────────────────────────────────────────────────────
+function computeTooltipPos(rect, tipW) {
+  const vh = window.innerHeight
+  const vw = window.innerWidth
+  const PAD = 14
+  const ARROW_H = 13
+  const TIP_H_EST = 290
+
+  const spaceBelow = vh - rect.bottom - PAD
+  const spaceAbove = rect.top - PAD
+  const goAbove = spaceBelow < TIP_H_EST && spaceAbove > spaceBelow
+
+  let top, arrowDir
+  if (goAbove) {
+    top = Math.max(PAD, rect.top - TIP_H_EST - ARROW_H)
+    arrowDir = 'down'
+  } else {
+    top = Math.min(vh - TIP_H_EST - PAD, rect.bottom + ARROW_H)
+    arrowDir = 'up'
+  }
+
+  let left = rect.left + rect.width / 2 - tipW / 2
+  left = Math.max(PAD, Math.min(left, vw - tipW - PAD))
+
+  const arrowLeft = Math.max(18, Math.min(
+    rect.left + rect.width / 2 - left - 13,
+    tipW - 44
+  ))
+
+  return { top, left, arrowDir, arrowLeft }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Spot step — spotlight + arrow tooltip
+// ─────────────────────────────────────────────────────────────────────────────
+function SpotStep({ step, stepNum, total, onNext }) {
+  const result = useTargetRect(step.target)
+  const tipW = Math.min(320, window.innerWidth - 28)
+
+  if (!result) {
+    // Still measuring — show the shade but no tooltip yet
+    return <div className="ob-shade" />
+  }
+
+  let spotStyle = null
+  let tipStyle, arrowDir = null, arrowLeft = tipW / 2 - 13
+
+  if (result.found) {
+    const r = result.rect
+    spotStyle = { top: r.top - 6, left: r.left - 6, width: r.width + 12, height: r.height + 12 }
+    const p = computeTooltipPos(r, tipW)
+    tipStyle = { top: p.top, left: p.left, width: tipW }
+    arrowDir = p.arrowDir
+    arrowLeft = p.arrowLeft
+  } else {
+    // Fallback: tooltip above bottom nav, centred
+    const vh = window.innerHeight
+    const vw = window.innerWidth
+    tipStyle = { top: vh - 90 - 300, left: Math.max(14, vw / 2 - tipW / 2), width: tipW }
+  }
+
+  return (
+    <>
+      {result.found
+        ? <div className="ob-spotlight" style={spotStyle} />
+        : <div className="ob-shade" />
+      }
+
+      <div className="ob-tooltip" style={tipStyle}>
+        {arrowDir && (
+          <div className={`ob-arrow ob-arrow--${arrowDir}`} style={{ left: arrowLeft }} />
+        )}
+        <span className="ob-counter">{stepNum + 1} / {total}</span>
+        <div className="ob-tip-icon">{step.icon}</div>
+        <h3 className="ob-tip-title">{step.title}</h3>
+        <p className="ob-tip-body">{step.body}</p>
+        <button className="ob-tip-next" onClick={onNext}>
+          Got it! Next →
+        </button>
+      </div>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card step — full-screen coloured slide
 // ─────────────────────────────────────────────────────────────────────────────
 function CardStep({ step, stepNum, total, onNext }) {
   return (
     <div className="ob-card" style={{ '--ob-color': step.color }}>
       <div className="ob-card-inner">
-        <div className="ob-step-dots">
-          {Array.from({ length: total }).map((_, i) => (
-            <span key={i} className={`ob-dot ${i === stepNum ? 'ob-dot--active' : ''}`} />
-          ))}
-        </div>
+        <span className="ob-counter ob-counter--card">{stepNum + 1} / {total}</span>
         <div className="ob-card-icon">{step.icon}</div>
         <h2 className="ob-card-title">{step.title}</h2>
         <p className="ob-card-body">{step.body}</p>
-        <button className="button ob-next-btn" onClick={onNext}>
+        <button className="ob-card-btn" onClick={onNext}>
           {step.btn || 'Next →'}
         </button>
-        <div className="ob-step-label">{stepNum + 1} of {total}</div>
       </div>
     </div>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Live step — bottom sheet over real app
-// ─────────────────────────────────────────────────────────────────────────────
-function LiveStep({ step, stepNum, total, onNext }) {
-  return (
-    <div className="ob-live-overlay">
-      <div className="ob-backdrop" />
-      <div className="ob-sheet">
-        <div className="ob-step-dots ob-sheet-dots">
-          {Array.from({ length: total }).map((_, i) => (
-            <span key={i} className={`ob-dot ${i === stepNum ? 'ob-dot--active' : ''}`} />
-          ))}
-        </div>
-        <div className="ob-sheet-icon">{step.icon}</div>
-        <h3 className="ob-sheet-title">{step.title}</h3>
-        <p className="ob-sheet-body">{step.body}</p>
-        <button className="button ob-next-btn" onClick={onNext}>
-          {stepNum === total - 1 ? '🚀 Let\'s Start!' : 'Got it! Next →'}
-        </button>
-        <div className="ob-step-label">{stepNum + 1} of {total}</div>
-      </div>
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Root — manages step index, navigates real app, renders overlay
+// Root — manages step, persists to localStorage so remounts don't restart it
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const { dispatch } = useStore()
-  const [idx, setIdx] = useState(0)
+
+  const [idx, setIdx] = useState(() => {
+    const saved = parseInt(localStorage.getItem(OB_STEP_KEY) || '0', 10)
+    return isNaN(saved) ? 0 : Math.min(saved, STEPS.length - 1)
+  })
 
   const step = STEPS[idx]
   const total = STEPS.length
 
-  // Navigate the real app whenever a live step becomes active
+  // Navigate the real app to the right screen for each spot step
   useEffect(() => {
-    if (step.type === 'live' && step.view) {
+    if (step.view) {
       dispatch({ type: 'SET_VIEW', payload: step.view })
     }
-  }, [idx])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [idx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function next() {
-    if (idx >= total - 1 || STEPS[idx].isLast) {
-      dispatch({ type: 'COMPLETE_ONBOARDING' })
-      return
-    }
-    setIdx(i => i + 1)
+  function done() {
+    localStorage.removeItem(OB_STEP_KEY)
+    localStorage.setItem(OB_DONE_KEY, '1')
+    dispatch({ type: 'COMPLETE_ONBOARDING' })
   }
 
-  function skip() {
-    dispatch({ type: 'COMPLETE_ONBOARDING' })
+  function next() {
+    if (step.isLast || idx >= total - 1) { done(); return }
+    const ni = idx + 1
+    localStorage.setItem(OB_STEP_KEY, String(ni))
+    setIdx(ni)
   }
 
   return (
     <>
-      {/* Skip button always visible */}
-      {!STEPS[idx].isLast && (
-        <button className="ob-skip-btn" onClick={skip}>
-          Skip tour
-        </button>
+      {!step.isLast && (
+        <button className="ob-skip-btn" onClick={done}>Skip tour</button>
       )}
-
       {step.type === 'card'
         ? <CardStep step={step} stepNum={idx} total={total} onNext={next} />
-        : <LiveStep step={step} stepNum={idx} total={total} onNext={next} />
+        : <SpotStep step={step} stepNum={idx} total={total} onNext={next} />
       }
     </>
   )
