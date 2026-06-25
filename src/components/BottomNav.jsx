@@ -7,6 +7,7 @@ const TABS = [
   { view: 'products',  icon: '📦', label: 'Products' },
   { view: 'customers', icon: '👥', label: 'Customers' },
   { view: 'reports',   icon: '📊', label: 'Reports' },
+  { view: 'settings',  icon: '⚙️', label: 'Settings' },
 ]
 
 export default function BottomNav() {

@@ -563,7 +563,7 @@ button {
   left: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0;
   padding: 4px 8px;
   background: white;
