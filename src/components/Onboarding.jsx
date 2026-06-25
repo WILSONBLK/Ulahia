@@ -10,7 +10,7 @@ const STEPS = [
   // 1 — Welcome
   {
     type: 'card',
-    color: '#E85D04',
+    color: '#087f5b',
     icon: '👋',
     title: 'Welcome to Ulahia!',
     body: 'I am going to teach you everything you need to know, step by step.\n\nThis will take about 2 minutes. Let\'s go!',
@@ -178,7 +178,7 @@ const STEPS = [
   // 19 — Done!
   {
     type: 'card',
-    color: '#E85D04',
+    color: '#087f5b',
     icon: '🎉',
     title: 'You Are Ready!',
     body: 'You now know everything about Ulahia.\n\nHere is how to begin:\n1️⃣ Go to Products and add your items\n2️⃣ Go to Sell when a customer buys something\n3️⃣ Check Home every morning to see your progress\n\nWelcome to your new shop book!',
