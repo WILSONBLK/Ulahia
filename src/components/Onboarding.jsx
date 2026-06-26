@@ -147,7 +147,7 @@ const STEPS = [
     tapView: 'products',
     icon: '📦',
     title: 'Go to Products',
-    body: "Now let's explore your Products screen.\n\n👆 Tap the 📦 Products button above to go there!",
+    body: "Now let's explore your Products screen.\n\n👇 Tap the 📦 Products button in the bottom bar!",
   },
 
   // 13 — Products: Add button
@@ -178,7 +178,7 @@ const STEPS = [
     tapView: 'customers',
     icon: '👥',
     title: 'Go to Customers',
-    body: "Now let's see who owes you money.\n\n👆 Tap the 👥 Customers button above!",
+    body: "Now let's see who owes you money.\n\n👇 Tap the 👥 Customers button in the bottom bar!",
   },
 
   // 16 — Customers: Cards
@@ -199,7 +199,7 @@ const STEPS = [
     tapView: 'reports',
     icon: '📊',
     title: 'Go to Reports',
-    body: "See your full profit history here.\n\n👆 Tap the 📊 Reports button above!",
+    body: "See your full profit history here.\n\n👇 Tap the 📊 Reports button in the bottom bar!",
   },
 
   // 18 — Reports: Period tabs
@@ -219,7 +219,7 @@ const STEPS = [
     tapView: 'settings',
     icon: '⚙️',
     title: 'Go to Settings',
-    body: "Last stop — Settings!\n\n👆 Tap the ⚙️ Settings button above!",
+    body: "Last stop — Settings!\n\n👇 Tap the ⚙️ Settings button in the bottom bar!",
   },
 
   // 20 — Settings: Recovery code

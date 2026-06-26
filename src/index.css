@@ -3138,9 +3138,9 @@ button {
 /* ══════════════════════════════════════
    CODE DISPLAY PAGE (write down your code)
 ══════════════════════════════════════ */
-.la-code-page { background: linear-gradient(160deg, #fffbe6 0%, #fff 60%); }
+.la-code-page { background: linear-gradient(160deg, #e6f7f1 0%, #fff 60%); }
 .la-code-card {
-  border-top-color: #f59f00;
+  border-top-color: #087f5b;
   text-align: center;
 }
 .la-code-icon {
@@ -3150,15 +3150,15 @@ button {
 .la-code-display {
   margin: 16px 0;
   padding: 18px;
-  background: #fffbe6;
-  border: 2px dashed #f59f00;
+  background: #e6f7f1;
+  border: 2px dashed #087f5b;
   border-radius: 14px;
 }
 .la-code-label {
   display: block;
   font-size: 0.82rem;
   font-weight: 800;
-  color: #7c5c00;
+  color: #065a40;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
@@ -3168,7 +3168,7 @@ button {
   font-weight: 900;
   font-family: 'Courier New', Courier, monospace;
   letter-spacing: 0.22em;
-  color: #d08000;
+  color: #087f5b;
 }
 .la-code-tips {
   display: flex;
