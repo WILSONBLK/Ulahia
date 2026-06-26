@@ -821,8 +821,22 @@ export function StoreProvider({ children }) {
     dispatch({ type: 'LOAD_PROFILE', payload: loadState(targetId) })
   }
 
+  function enterDemoTour() {
+    // Save current profile first
+    localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
+    // Reset demo state fresh with tour enabled
+    const demoWithTour = { ...structuredClone(demoState), onboardingDone: false }
+    localStorage.setItem(profileKey('demo'), JSON.stringify(demoWithTour))
+    localStorage.setItem(ACTIVE_KEY, 'demo')
+    // Clear tour flags so it starts from step 0
+    localStorage.removeItem('ulahia-ob-done')
+    localStorage.removeItem('ulahia-ob-step')
+    setActiveProfile('demo')
+    dispatch({ type: 'LOAD_PROFILE', payload: demoWithTour })
+  }
+
   return (
-    <StoreContext.Provider value={{ state, dispatch, activeProfile, switchProfile }}>
+    <StoreContext.Provider value={{ state, dispatch, activeProfile, switchProfile, enterDemoTour }}>
       {children}
     </StoreContext.Provider>
   )

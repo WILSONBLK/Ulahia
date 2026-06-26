@@ -364,7 +364,7 @@ function LanguageStep({ stepNum, total, onNext }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Full-screen card slide
 // ─────────────────────────────────────────────────────────────────────────────
-function CardStep({ step, stepNum, total, onNext }) {
+function CardStep({ step, stepNum, total, onNext, btnOverride }) {
   return (
     <div className="ob-card" style={{ '--ob-color': step.color }}>
       <div className="ob-card-inner">
@@ -373,7 +373,7 @@ function CardStep({ step, stepNum, total, onNext }) {
         <h2 className="ob-card-title">{step.title}</h2>
         <p className="ob-card-body">{step.body}</p>
         <button className="ob-card-btn" onClick={onNext}>
-          {step.btn || 'Next →'}
+          {btnOverride || step.btn || 'Next →'}
         </button>
       </div>
     </div>
@@ -492,7 +492,7 @@ function TapStep({ step, stepNum, total, onNext }) {
 // Root — manages step index with localStorage persistence
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Onboarding() {
-  const { dispatch } = useStore()
+  const { dispatch, activeProfile, switchProfile } = useStore()
 
   const [idx, setIdx] = useState(() => {
     const s = parseInt(localStorage.getItem(OB_STEP_KEY) || '0', 10)
@@ -514,10 +514,20 @@ export default function Onboarding() {
     }
   }, [idx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function done() {
+  function done(skipped = false) {
     localStorage.removeItem(OB_STEP_KEY)
-    localStorage.setItem(OB_DONE_KEY, '1')
-    dispatch({ type: 'COMPLETE_ONBOARDING' })
+    if (activeProfile === 'demo') {
+      if (skipped) {
+        // Skip → go straight back to main account
+        switchProfile('main')
+      } else {
+        // Tour completed → hand off to DemoPractice for the practice sale
+        dispatch({ type: 'COMPLETE_ONBOARDING' })
+      }
+    } else {
+      localStorage.setItem(OB_DONE_KEY, '1')
+      dispatch({ type: 'COMPLETE_ONBOARDING' })
+    }
   }
 
   function next() {
@@ -530,14 +540,17 @@ export default function Onboarding() {
   return (
     <>
       {!step.isLast && (
-        <button className="ob-skip-btn" onClick={done}>Skip tour</button>
+        <button className="ob-skip-btn" onClick={() => done(true)}>Skip tour</button>
       )}
 
       {step.type === 'language' && (
         <LanguageStep stepNum={idx} total={total} onNext={next} />
       )}
       {step.type === 'card' && (
-        <CardStep step={step} stepNum={idx} total={total} onNext={next} />
+        <CardStep
+          step={step} stepNum={idx} total={total} onNext={next}
+          btnOverride={step.isLast && activeProfile === 'demo' ? '💰 Try a Practice Sale! →' : null}
+        />
       )}
       {step.type === 'spot' && (
         <SpotStep step={step} stepNum={idx} total={total} onNext={next} />

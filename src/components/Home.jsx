@@ -47,7 +47,7 @@ function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
 }
 
 export default function Home() {
-  const { state, dispatch } = useStore()
+  const { state, dispatch, activeProfile, enterDemoTour } = useStore()
   const t = useLang()
   const { openModal } = useModal()
   const stats = useStats()
@@ -179,6 +179,18 @@ export default function Home() {
         <span style={{ flex: 1 }}>{t('navSettings')}</span>
         <span className="home-settings-arrow">›</span>
       </button>
+
+      {/* Demo Mode button — only visible on main profile */}
+      {activeProfile === 'main' && (
+        <button className="home-demo-btn" onClick={enterDemoTour}>
+          <span className="home-demo-icon">🎮</span>
+          <span className="home-demo-text">
+            <strong>Try Demo Mode</strong>
+            <span>See a sample shop & learn every button</span>
+          </span>
+          <span className="home-demo-arrow">›</span>
+        </button>
+      )}
 
       {/* Today summary + Close of Day */}
       <div className="home-today" style={{ cursor: 'pointer' }} onClick={openCloseOfDay}>

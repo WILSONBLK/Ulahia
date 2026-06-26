@@ -12,6 +12,7 @@ import Reports from './components/Reports.jsx'
 import Settings from './components/Settings.jsx'
 import BulkRestock from './components/BulkRestock.jsx'
 import BottomNav from './components/BottomNav.jsx'
+import DemoPractice from './components/DemoPractice.jsx'
 
 const VIEWS = {
   home: Home,
@@ -25,7 +26,7 @@ const VIEWS = {
 }
 
 export default function App() {
-  const { state } = useStore()
+  const { state, activeProfile, switchProfile } = useStore()
   const online = useOnline()
   const t = useLang()
 
@@ -56,9 +57,17 @@ export default function App() {
 
   // Single return keeps <Onboarding /> at a stable tree position so React
   // never unmounts/remounts it when the view changes (which would reset step state)
+  const demoBanner = activeProfile === 'demo' && !showOnboarding && (
+    <div className="demo-banner">
+      <span>🎮 Demo Mode — this is not your real shop</span>
+      <button className="demo-banner-exit" onClick={() => switchProfile('main')}>Exit Demo</button>
+    </div>
+  )
+
   return (
     <div className={appClass}>
       {offlineBanner}
+      {demoBanner}
 
       {(isHome || isPOS)
         ? <View />
@@ -76,6 +85,7 @@ export default function App() {
 
       <BottomNav />
       {showOnboarding && <Onboarding />}
+      {activeProfile === 'demo' && state.onboardingDone && <DemoPractice />}
     </div>
   )
 }
