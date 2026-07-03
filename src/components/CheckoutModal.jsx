@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStore } from '../store.jsx'
+import { useStore, getActiveOrder } from '../store.jsx'
 import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
@@ -13,6 +13,10 @@ export default function CheckoutModal() {
   const showToast = useToast()
   const t = useLang()
 
+  const activeOrder = getActiveOrder(state)
+  const hasMultipleOrders = state.orders.length > 1
+  const activeOrderLabel = activeOrder.customLabel || t('orderCustomerLabel', { n: activeOrder.number })
+
   const [mode, setMode] = useState('cash')
   const [transferConfirmed, setTransferConfirmed] = useState(false)
   const [customer, setCustomer] = useState(null)
@@ -20,7 +24,7 @@ export default function CheckoutModal() {
   const [discountType, setDiscountType] = useState(null) // null | 'percent' | 'flat'
   const [discountValue, setDiscountValue] = useState('')
 
-  const rawItems = state.cart.map(i => ({ ...i, subtotal: i.price * i.qty }))
+  const rawItems = activeOrder.items.map(i => ({ ...i, subtotal: i.price * i.qty }))
   const rawTotal = rawItems.reduce((sum, i) => sum + i.subtotal, 0)
 
   const discountAmount = (() => {
@@ -94,7 +98,7 @@ export default function CheckoutModal() {
     if (navigator.vibrate) navigator.vibrate([80, 40, 80])
 
     closeModal()
-    showToast(`Sale of ${money(total)} recorded!`)
+    showToast(t('saleRecordedToast', { amount: money(total) }))
 
     // Auto-show receipt after a brief pause so modal closes cleanly
     setTimeout(() => openModal(<ReceiptModal transaction={transaction} />), 120)
@@ -110,7 +114,9 @@ export default function CheckoutModal() {
       {/* Sticky header */}
       <div className="co-header">
         <button className="icon-button co-back-btn" onClick={closeModal}>←</button>
-        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{t('checkout')}</h3>
+        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>
+          {t('checkout')}{hasMultipleOrders && ` — ${activeOrderLabel}`}
+        </h3>
       </div>
 
       {/* Order summary */}
@@ -130,19 +136,19 @@ export default function CheckoutModal() {
 
       {/* Discount */}
       <div className="co-section">
-        <div className="co-label">Discount <span style={{ fontWeight: 400, color: 'var(--muted)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+        <div className="co-label">{t('discountLabel')} <span style={{ fontWeight: 400, color: 'var(--muted)', textTransform: 'none', letterSpacing: 0 }}>({t('optional')})</span></div>
         <div className="co-discount-row">
           <button
             className={`co-discount-btn${discountType === 'percent' ? ' is-active' : ''}`}
             onClick={() => { setDiscountType(discountType === 'percent' ? null : 'percent'); setDiscountValue('') }}
           >
-            % Off
+            {t('percentOffBtn')}
           </button>
           <button
             className={`co-discount-btn${discountType === 'flat' ? ' is-active' : ''}`}
             onClick={() => { setDiscountType(discountType === 'flat' ? null : 'flat'); setDiscountValue('') }}
           >
-            ₦ Off
+            {t('flatOffBtn')}
           </button>
         </div>
         {discountType && (
@@ -151,14 +157,14 @@ export default function CheckoutModal() {
               className="field"
               type="number"
               min="0"
-              placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 500'}
+              placeholder={discountType === 'percent' ? t('egPercent') : t('egFlat')}
               value={discountValue}
               onChange={e => setDiscountValue(e.target.value)}
               autoFocus
             />
             {discountAmount > 0 && (
               <div className="co-discount-savings">
-                Save {money(discountAmount)} — New total: <strong>{money(total)}</strong>
+                {t('saveDiscount', { amt: money(discountAmount), total: money(total) })}
               </div>
             )}
           </div>

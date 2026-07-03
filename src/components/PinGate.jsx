@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useRef, useEffect } from 'react'
 import { useStore } from '../store.jsx'
 import { hashPin } from '../utils.js'
+import { useLang } from '../useLang.js'
 
 const Ctx = createContext(null)
 
 export function PinGateProvider({ children }) {
   const { state, dispatch } = useStore()
+  const t = useLang()
   const [show, setShow] = useState(false)
   const [tab, setTab] = useState('pin')
   const [input, setInput] = useState('')
@@ -46,7 +48,7 @@ export function PinGateProvider({ children }) {
 
     if (lockUntilRef.current > now) {
       const mins = Math.ceil((lockUntilRef.current - now) / 60000)
-      setError(`Too many wrong tries. Wait ${mins} more minute${mins !== 1 ? 's' : ''}.`)
+      setError(t('pgTooManyWait', { mins }))
       return
     }
 
@@ -71,10 +73,10 @@ export function PinGateProvider({ children }) {
       if (attemptsRef.current >= 3) {
         lockUntilRef.current = now + 5 * 60 * 1000
         attemptsRef.current = 0
-        setError('Too many wrong tries. Locked for 5 minutes.')
+        setError(t('pgTooManyLocked'))
       } else {
         const left = 3 - attemptsRef.current
-        setError(`Wrong ${tab === 'pin' ? 'PIN' : 'OTP'}. ${left} tr${left === 1 ? 'y' : 'ies'} left.`)
+        setError(t('pgWrongCode', { left }))
       }
       setInput('')
     }
@@ -89,19 +91,19 @@ export function PinGateProvider({ children }) {
         <div className="pingate-overlay" onClick={e => e.target === e.currentTarget && dismiss()}>
           <div className="pingate-card">
             <p className="pingate-icon">🔒</p>
-            <h3 className="pingate-title">Authorization Required</h3>
-            <p className="pingate-sub">Owner must approve this inventory change.</p>
+            <h3 className="pingate-title">{t('pgAuthRequired')}</h3>
+            <p className="pingate-sub">{t('pgAuthSub')}</p>
 
             <div className="pingate-tabs">
               <button
                 className={`pingate-tab${tab === 'pin' ? ' is-active' : ''}`}
                 onClick={() => switchTab('pin')}
-              >Owner PIN</button>
+              >{t('pgOwnerPin')}</button>
               {hasValidOtp && (
                 <button
                   className={`pingate-tab${tab === 'otp' ? ' is-active' : ''}`}
                   onClick={() => switchTab('otp')}
-                >Use OTP</button>
+                >{t('pgUseOtp')}</button>
               )}
             </div>
 
@@ -111,7 +113,7 @@ export function PinGateProvider({ children }) {
                 className="field pingate-input"
                 type="password"
                 inputMode="numeric"
-                placeholder={tab === 'pin' ? '• • • • •' : '6-digit code'}
+                placeholder={tab === 'pin' ? '• • • • •' : t('pgOtpPlaceholder')}
                 value={input}
                 onChange={e => { setInput(e.target.value); setError('') }}
                 maxLength={tab === 'pin' ? 8 : 6}
@@ -119,8 +121,8 @@ export function PinGateProvider({ children }) {
               />
               {error && <p className="pingate-error">{error}</p>}
               <div className="row" style={{ marginTop: 14 }}>
-                <button className="button" type="submit">Confirm</button>
-                <button className="button light" type="button" onClick={dismiss}>Cancel</button>
+                <button className="button" type="submit">{t('pgConfirm')}</button>
+                <button className="button light" type="button" onClick={dismiss}>{t('cancel')}</button>
               </div>
             </form>
           </div>

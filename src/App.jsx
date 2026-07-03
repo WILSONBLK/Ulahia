@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from './store.jsx'
 import { useOnline } from './useOnline.js'
 import { useLang } from './useLang.js'
@@ -9,10 +10,15 @@ import POSScreen from './components/POSScreen.jsx'
 import Customers from './components/Customers.jsx'
 import Products from './components/Products.jsx'
 import Reports from './components/Reports.jsx'
+import Expenses from './components/Expenses.jsx'
 import Settings from './components/Settings.jsx'
 import BulkRestock from './components/BulkRestock.jsx'
 import BottomNav from './components/BottomNav.jsx'
 import DemoPractice from './components/DemoPractice.jsx'
+import Help from './components/Help.jsx'
+import More from './components/More.jsx'
+import LockScreen from './components/LockScreen.jsx'
+import { TOUR_SEEN_KEY } from './utils.js'
 
 const VIEWS = {
   home: Home,
@@ -21,16 +27,29 @@ const VIEWS = {
   debts: Customers,
   products: Products,
   reports: Reports,
+  expenses: Expenses,
   settings: Settings,
+  help: Help,
+  more: More,
   'bulk-restock': BulkRestock,
 }
+
+const UNLOCK_KEY = 'ulahia-unlocked'
 
 export default function App() {
   const { state, activeProfile, switchProfile } = useStore()
   const online = useOnline()
   const t = useLang()
+  const [, bumpLock] = useState(0)
 
   if (!state.setupDone) return <LandingAuth />
+
+  // Password lock on app open (per browser session). Signup/login set the
+  // flag themselves, so it only triggers on a genuine cold open. Demo never locks.
+  const unlocked = sessionStorage.getItem(UNLOCK_KEY) === '1'
+  if (activeProfile === 'main' && state.auth?.passwordHash && !unlocked) {
+    return <LockScreen onUnlock={() => { sessionStorage.setItem(UNLOCK_KEY, '1'); bumpLock(n => n + 1) }} />
+  }
 
   const View = VIEWS[state.view] || Home
   const isHome = state.view === 'home'
@@ -45,7 +64,7 @@ export default function App() {
   const offlineBanner = !online && (
     <div className="offline is-visible">
       {t('offline')}
-      <button className="button light" onClick={() => window.location.reload()}>Try again</button>
+      <button className="button light" onClick={() => window.location.reload()}>{t('tryAgain')}</button>
     </div>
   )
 
@@ -53,14 +72,14 @@ export default function App() {
   // even if the component tree remounts for any reason
   const showOnboarding =
     !state.onboardingDone &&
-    localStorage.getItem('ulahia-ob-done') !== '1'
+    localStorage.getItem(TOUR_SEEN_KEY) !== '1'
 
   // Single return keeps <Onboarding /> at a stable tree position so React
   // never unmounts/remounts it when the view changes (which would reset step state)
   const demoBanner = activeProfile === 'demo' && !showOnboarding && (
     <div className="demo-banner">
-      <span>🎮 Demo Mode — this is not your real shop</span>
-      <button className="demo-banner-exit" onClick={() => switchProfile('main')}>Exit Demo</button>
+      <span>🎮 {t('demoModeBanner')}</span>
+      <button className="demo-banner-exit" onClick={() => switchProfile('main')}>{t('exitDemo')}</button>
     </div>
   )
 
@@ -85,7 +104,7 @@ export default function App() {
 
       <BottomNav />
       {showOnboarding && <Onboarding />}
-      {activeProfile === 'demo' && state.onboardingDone && <DemoPractice />}
+      {activeProfile === 'demo' && state.onboardingDone && !state.practiceDone && <DemoPractice />}
     </div>
   )
 }

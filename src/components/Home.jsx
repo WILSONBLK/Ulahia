@@ -7,41 +7,42 @@ import { useLang } from '../useLang.js'
 
 function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
   const { closeModal } = useModal()
+  const t = useLang()
   return (
     <div className="cod-modal">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button className="icon-button" onClick={closeModal}>←</button>
-        <h3 className="cod-title">Today's Summary</h3>
+        <h3 className="cod-title">{t('todaysSummary')}</h3>
       </div>
       <div className="cod-grid">
         <div className="cod-card cod-card--sales">
-          <span>Total Sales</span>
+          <span>{t('totalSalesLabel')}</span>
           <strong>{money(stats.todaySales)}</strong>
         </div>
         <div className="cod-card cod-card--profit">
-          <span>Profit</span>
+          <span>{t('profit')}</span>
           <strong>{money(stats.todayProfit)}</strong>
         </div>
         <div className="cod-card">
-          <span>Transactions</span>
+          <span>{t('transactions')}</span>
           <strong>{stats.todayCount}</strong>
         </div>
         <div className="cod-card">
-          <span>Cash Received</span>
+          <span>{t('cashReceivedLabel')}</span>
           <strong>{money(todayCash)}</strong>
         </div>
         <div className="cod-card">
-          <span>Transfers</span>
+          <span>{t('transfersLabel')}</span>
           <strong>{money(todayTransfer)}</strong>
         </div>
         {todayDebt > 0 && (
           <div className="cod-card" style={{ borderColor: '#ffc9c9', background: '#fff5f5' }}>
-            <span style={{ color: 'var(--red)' }}>Credit Given</span>
+            <span style={{ color: 'var(--red)' }}>{t('creditGiven')}</span>
             <strong style={{ color: 'var(--red)' }}>{money(todayDebt)}</strong>
           </div>
         )}
       </div>
-      <button className="button" style={{ width: '100%' }} onClick={closeModal}>Done</button>
+      <button className="button" style={{ width: '100%' }} onClick={closeModal}>{t('doneBtn')}</button>
     </div>
   )
 }
@@ -51,7 +52,7 @@ export default function Home() {
   const t = useLang()
   const { openModal } = useModal()
   const stats = useStats()
-  const { todaySales, todayProfit, cartCount, totalDebt, todayCount, lowStockCount } = stats
+  const { todaySales, todayProfit, cartCount, orderCount, totalDebt, todayCount, lowStockCount } = stats
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? t('greetMorning') : hour < 17 ? t('greetAfternoon') : t('greetEvening')
@@ -61,6 +62,9 @@ export default function Home() {
   const todayCash = todayTxns.filter(t => t.mode === 'cash').reduce((s, t) => s + t.amountPaid, 0)
   const todayTransfer = todayTxns.filter(t => t.mode === 'transfer').reduce((s, t) => s + t.amountPaid, 0)
   const todayDebt = todayTxns.filter(t => t.mode === 'debt').reduce((s, t) => s + t.balance, 0)
+  const todayExpenseTotal = state.expenses
+    .filter(e => new Date(e.time).toDateString() === today)
+    .reduce((s, e) => s + e.amount, 0)
 
   function go(view) {
     dispatch({ type: 'SET_VIEW', payload: view })
@@ -93,14 +97,14 @@ export default function Home() {
           <div className="theme-toggles">
             <button
               className={`theme-btn${state.highContrast ? ' is-active' : ''}`}
-              title="High contrast"
+              title={t('highContrastTitle')}
               onClick={() => dispatch({ type: 'TOGGLE_HIGH_CONTRAST' })}
             >
               {state.highContrast ? '👁' : '🔆'}
             </button>
             <button
               className={`theme-btn${state.darkMode ? ' is-active' : ''}`}
-              title="Dark mode"
+              title={t('darkModeTitle')}
               onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
             >
               {state.darkMode ? '☀️' : '🌙'}
@@ -130,8 +134,8 @@ export default function Home() {
         <button className="home-lowstock-banner" onClick={() => go('products')}>
           <span className="home-lowstock-icon">⚠️</span>
           <span className="home-lowstock-text">
-            <strong>{lowStockCount} product{lowStockCount !== 1 ? 's' : ''} running low</strong>
-            <span>Tap to see which ones need restocking</span>
+            <strong>{lowStockCount === 1 ? t('lowStockBannerOne') : t('lowStockBannerMany', { n: lowStockCount })}</strong>
+            <span>{t('lowStockTapHint')}</span>
           </span>
           <span className="home-lowstock-arrow">›</span>
         </button>
@@ -142,7 +146,11 @@ export default function Home() {
         <span className="home-sell-icon">💰</span>
         <span className="home-sell-label">{t('newSale')}</span>
         {cartCount > 0 && (
-          <span className="home-sell-sub">{cartCount} item{cartCount !== 1 ? 's' : ''} in cart — tap to continue</span>
+          <span className="home-sell-sub">
+            {orderCount > 1
+              ? t('ordersWaitingHint', { n: orderCount })
+              : (cartCount === 1 ? t('cartHintOne') : t('cartHintMany', { n: cartCount }))}
+          </span>
         )}
       </button>
 
@@ -157,7 +165,7 @@ export default function Home() {
           <span className="home-tile-icon">📋</span>
           <span className="home-tile-label">{t('navDebts')}</span>
           {totalDebt > 0
-            ? <span className="home-tile-sub home-tile-sub--bad">{money(totalDebt)} owed</span>
+            ? <span className="home-tile-sub home-tile-sub--bad">{money(totalDebt)} {t('owedSuffix')}</span>
             : <span className="home-tile-sub">{t('debtsSub')}</span>
           }
         </button>
@@ -171,6 +179,14 @@ export default function Home() {
           <span className="home-tile-label">{t('navReports')}</span>
           <span className="home-tile-sub">{t('reportsSub')}</span>
         </button>
+        <button className="home-tile" onClick={() => go('expenses')}>
+          <span className="home-tile-icon">🧾</span>
+          <span className="home-tile-label">{t('navExpenses')}</span>
+          {todayExpenseTotal > 0
+            ? <span className="home-tile-sub">{money(todayExpenseTotal)} {t('todayLowerSuffix')}</span>
+            : <span className="home-tile-sub">{t('expensesSub')}</span>
+          }
+        </button>
       </div>
 
       {/* Settings row */}
@@ -180,13 +196,20 @@ export default function Home() {
         <span className="home-settings-arrow">›</span>
       </button>
 
+      {/* Help row */}
+      <button className="home-settings-row" onClick={() => go('help')}>
+        <span>❓</span>
+        <span style={{ flex: 1 }}>{t('navHelp')}</span>
+        <span className="home-settings-arrow">›</span>
+      </button>
+
       {/* Demo Mode button — only visible on main profile */}
       {activeProfile === 'main' && (
         <button className="home-demo-btn" onClick={enterDemoTour}>
           <span className="home-demo-icon">🎮</span>
           <span className="home-demo-text">
-            <strong>Try Demo Mode</strong>
-            <span>See a sample shop & learn every button</span>
+            <strong>{t('tryDemoMode')}</strong>
+            <span>{t('demoModeHint')}</span>
           </span>
           <span className="home-demo-arrow">›</span>
         </button>
@@ -197,7 +220,7 @@ export default function Home() {
         <div className="home-stat">
           <span>{t('todaySales')}</span>
           <strong>{money(todaySales)}</strong>
-          {todayCount > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>{todayCount} {todayCount === 1 ? 'sale' : 'sales'}</span>}
+          {todayCount > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>{todayCount === 1 ? t('saleCountOne') : t('saleCountMany', { n: todayCount })}</span>}
         </div>
         <div className="home-divider" />
         <div className="home-stat">
@@ -206,8 +229,8 @@ export default function Home() {
         </div>
         <div className="home-divider" />
         <div className="home-stat">
-          <span style={{ fontSize: '0.72rem', color: 'var(--green)', fontWeight: 800 }}>📋 Day Summary</span>
-          <strong style={{ fontSize: '0.85rem', color: 'var(--green)' }}>View →</strong>
+          <span style={{ fontSize: '0.72rem', color: 'var(--green)', fontWeight: 800 }}>📋 {t('daySummary')}</span>
+          <strong style={{ fontSize: '0.85rem', color: 'var(--green)' }}>{t('viewArrow')}</strong>
         </div>
       </div>
 

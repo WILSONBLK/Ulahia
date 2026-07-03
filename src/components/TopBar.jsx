@@ -6,7 +6,10 @@ const TITLE_KEYS = {
   debts: 'navDebts',
   products: 'navProducts',
   reports: 'navReports',
+  expenses: 'navExpenses',
   settings: 'navSettings',
+  help: 'navHelp',
+  more: 'navMore',
 }
 
 export default function TopBar() {

@@ -15,9 +15,9 @@ function PaymentModal({ customer }) {
 
   function submit(overrideAmount) {
     const amt = Number(overrideAmount ?? amount)
-    if (!amt || amt <= 0) { showToast('Enter a valid amount.'); return }
+    if (!amt || amt <= 0) { showToast(t('enterValidAmount')); return }
     dispatch({ type: 'ADD_PAYMENT', payload: { customerId: customer.id, amount: amt, note } })
-    showToast(`${money(amt)} recorded for ${customer.name}.`)
+    showToast(t('paymentRecordedToast', { amount: money(amt), name: customer.name }))
     closeModal()
   }
 
@@ -25,7 +25,7 @@ function PaymentModal({ customer }) {
     <>
       <h3 style={{ margin: '0 0 4px' }}>{t('recordPayment')}</h3>
       <p style={{ margin: '0 0 20px', color: 'var(--muted)' }}>
-        {customer.name} owes <strong className="amount bad">{money(customer.totalBalance)}</strong>
+        {t('customerOwesPrefix', { name: customer.name })} <strong className="amount bad">{money(customer.totalBalance)}</strong>
       </p>
       <div style={{ display: 'grid', gap: 12 }}>
         <label className="label">
@@ -45,7 +45,7 @@ function PaymentModal({ customer }) {
           {t('note')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>({t('optional')})</span>
           <input
             className="field"
-            placeholder="e.g. paid half"
+            placeholder={t('notePlaceholderPayment')}
             value={note}
             onChange={e => setNote(e.target.value)}
           />
@@ -55,9 +55,9 @@ function PaymentModal({ customer }) {
           <button
             className="button secondary"
             onClick={() => submit(customer.totalBalance)}
-            title="Mark the full balance as paid"
+            title={t('payFullTitle')}
           >
-            Pay Full ({money(customer.totalBalance)})
+            {t('payFullBtn', { amt: money(customer.totalBalance) })}
           </button>
           <button className="button light" onClick={closeModal}>{t('cancel')}</button>
         </div>
@@ -127,7 +127,7 @@ export default function Customers() {
       <div className="list">
         {!filtered.length ? (
           <div className="empty">
-            {tab === 'owing' ? t('noDebt') : 'No cleared customers yet.'}
+            {tab === 'owing' ? t('noDebt') : t('noClearedYet')}
           </div>
         ) : (
           filtered.map(c => (
@@ -144,7 +144,7 @@ export default function Customers() {
               </div>
               <div className="cust-right">
                 <strong className={c.totalBalance > 0 ? 'amount bad' : 'amount good'}>
-                  {c.totalBalance > 0 ? money(c.totalBalance) : '✓ Cleared'}
+                  {c.totalBalance > 0 ? money(c.totalBalance) : `✓ ${t('clearedBadge')}`}
                 </strong>
                 {c.totalBalance > 0 && (
                   <div style={{ display: 'flex', gap: 6 }}>
@@ -159,11 +159,11 @@ export default function Customers() {
                       <button
                         className="button"
                         style={{ minHeight: 38, padding: '0 10px', fontSize: '0.88rem', background: '#25D366' }}
-                        title="Send WhatsApp reminder"
+                        title={t('whatsappReminderTitle')}
                         onClick={() => {
                           const raw = c.phone.replace(/\D/g, '')
                           const num = raw.startsWith('0') ? '234' + raw.slice(1) : raw
-                          const msg = `Hello ${c.name}, this is a reminder that you owe ${money(c.totalBalance)}. Kindly pay when you can. Thank you!`
+                          const msg = t('whatsappReminderMsg', { name: c.name, amount: money(c.totalBalance) })
                           window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank')
                         }}
                       >

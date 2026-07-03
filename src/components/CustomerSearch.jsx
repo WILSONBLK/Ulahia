@@ -70,7 +70,7 @@ export default function CustomerSearch({ required, value, onChange }) {
               </div>
               {c.totalBalance > 0 && (
                 <span className="pill warn" style={{ fontSize: '0.78rem', flexShrink: 0 }}>
-                  {money(c.totalBalance)} owed
+                  {money(c.totalBalance)} {t('owedSuffix')}
                 </span>
               )}
             </button>
@@ -84,7 +84,7 @@ export default function CustomerSearch({ required, value, onChange }) {
                 setOpen(false)
               }}
             >
-              + New customer: <strong style={{ marginLeft: 4 }}>{query}</strong>
+              {t('newCustomerPrefix')} <strong style={{ marginLeft: 4 }}>{query}</strong>
             </button>
           )}
 
@@ -103,7 +103,7 @@ export default function CustomerSearch({ required, value, onChange }) {
             type="tel"
             value={value.phone || ''}
             onChange={e => onChange({ ...value, phone: e.target.value })}
-            placeholder="0803 xxx xxxx"
+            placeholder={t('phonePlaceholder')}
           />
         </label>
       )}

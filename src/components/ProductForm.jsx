@@ -37,7 +37,7 @@ export default function ProductForm({ product = null }) {
         Object.assign(payload, { invested: cost })
       }
       dispatch({ type: 'EDIT_PRODUCT', payload })
-      showToast(`${name} updated.`)
+      showToast(t('productUpdatedToast', { name }))
     } else {
       if (qtyNum > 0) {
         const price = Number(d.get('price'))
@@ -46,7 +46,7 @@ export default function ProductForm({ product = null }) {
       } else {
         dispatch({ type: 'ADD_PRODUCT', payload: { type: 'flexible', name, invested: cost } })
       }
-      showToast(`${name} added.`)
+      showToast(t('productAddedToast', { name }))
     }
     closeModal()
   }
@@ -58,27 +58,27 @@ export default function ProductForm({ product = null }) {
 
         <label className="label wide">
           {t('productName')}
-          <input className="field" name="name" defaultValue={product?.name ?? ''} placeholder="e.g. Golden Penny Spaghetti" autoFocus required />
+          <input className="field" name="name" defaultValue={product?.name ?? ''} placeholder={t('namePlaceholder')} autoFocus required />
         </label>
 
         <label className="label wide">
           {t('cost')} (₦)
           <input className="field" name="cost" type="number" min="0"
             defaultValue={isEdit ? (product.type === 'fixed' ? product.cost : product.invested) : ''}
-            placeholder="How much you paid" />
+            placeholder={t('costPlaceholder')} />
         </label>
 
         {!isFlexEdit && (
           <label className="label wide">
             {t('qty')}
             <input className="field" name="qty" type="number" min="0"
-              placeholder={isEdit ? '' : 'Leave blank for rice, pepper, chicken…'}
+              placeholder={isEdit ? '' : t('qtyPlaceholderBlank')}
               value={qty}
               onChange={e => setQty(e.target.value)}
             />
             {!isEdit && !showFixedFields && (
               <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 4 }}>
-                Leave blank if you sell by amount — e.g. ₦500 pepper, ₦2,000 rice
+                {t('flexHint')}
               </span>
             )}
           </label>
@@ -90,9 +90,9 @@ export default function ProductForm({ product = null }) {
               {t('price')} (₦)
               <input className="field" name="price" type="number" min="1"
                 defaultValue={isEdit && product.type === 'fixed' ? product.price : ''}
-                placeholder="Price per unit" required
+                placeholder={t('pricePlaceholder')} required
                 onChange={() => setPriceError(false)} />
-              {priceError && <span style={{ color: 'var(--red)', fontSize: '0.8rem', marginTop: 4, display: 'block' }}>Selling price is required</span>}
+              {priceError && <span style={{ color: 'var(--red)', fontSize: '0.8rem', marginTop: 4, display: 'block' }}>{t('priceRequiredError')}</span>}
             </label>
             <label className="label">
               {t('lowStock')}
@@ -103,8 +103,8 @@ export default function ProductForm({ product = null }) {
           </>
         )}
 
-        {showFixedFields && <p className="form-hint wide">📦 This product tracks stock by units.</p>}
-        {showFlexHint && <p className="form-hint wide" style={{ color: 'var(--green)' }}>⚖️ Sold by amount (₦ per sale).</p>}
+        {showFixedFields && <p className="form-hint wide">📦 {t('tracksStockHint')}</p>}
+        {showFlexHint && <p className="form-hint wide" style={{ color: 'var(--green)' }}>⚖️ {t('soldByAmountHint')}</p>}
 
         <div className="row wide">
           <button className="button" type="submit">{isEdit ? t('saveChanges') : t('addProduct')}</button>

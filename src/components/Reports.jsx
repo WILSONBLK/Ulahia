@@ -1,26 +1,9 @@
 import { useState } from 'react'
 import { useStore } from '../store.jsx'
 import { useModal } from '../modal.jsx'
-import { money } from '../utils.js'
+import { money, filterByPeriod } from '../utils.js'
 import { useLang } from '../useLang.js'
 import ReceiptModal from './ReceiptModal.jsx'
-
-function filterByPeriod(txns, period) {
-  const now = new Date()
-  if (period === 'today') {
-    const today = now.toDateString()
-    return txns.filter(t => new Date(t.time).toDateString() === today)
-  }
-  if (period === 'week') {
-    const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000)
-    return txns.filter(t => new Date(t.time) >= cutoff)
-  }
-  if (period === 'month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1)
-    return txns.filter(t => new Date(t.time) >= start)
-  }
-  return txns
-}
 
 export default function Reports() {
   const { state } = useStore()
@@ -82,12 +65,12 @@ export default function Reports() {
         <div className="report-card report-card--sales">
           <span>{t('sales')}</span>
           <strong>{money(totalSales)}</strong>
-          {flexRevenue > 0 && <small style={{ color: 'var(--muted)' }}>incl. {money(flexRevenue)} flexible</small>}
+          {flexRevenue > 0 && <small style={{ color: 'var(--muted)' }}>{t('inclFlexible', { amount: money(flexRevenue) })}</small>}
         </div>
         <div className="report-card report-card--profit">
           <span>{t('profit')}</span>
           <strong>{money(totalProfit)}</strong>
-          <small>{t('countedProducts')} only</small>
+          <small>{t('countedProducts')} {t('onlySuffix')}</small>
         </div>
         <div className="report-card report-card--cash">
           <span>💵 {t('cash')}</span>
@@ -114,14 +97,14 @@ export default function Reports() {
                 <div className="flex-report-head">
                   <strong>{p.name}</strong>
                   {p.recovered
-                    ? <span className="pill good">✓ Recovered</span>
+                    ? <span className="pill good">✓ {t('recoveredBadge')}</span>
                     : <span className="pill">{p.pct}%</span>
                   }
                 </div>
                 <div className="flex-report-numbers">
                   <span>{t('invested')} <strong>{money(p.invested)}</strong></span>
                   <span>{t('sold')} <strong>{money(p.sold)}</strong></span>
-                  <span>Net <strong className={p.net >= 0 ? 'amount good' : 'amount bad'}>{p.net >= 0 ? '+' : ''}{money(p.net)}</strong></span>
+                  <span>{t('netLabel')} <strong className={p.net >= 0 ? 'amount good' : 'amount bad'}>{p.net >= 0 ? '+' : ''}{money(p.net)}</strong></span>
                 </div>
                 <div className="recovery-bar-wrap">
                   <div

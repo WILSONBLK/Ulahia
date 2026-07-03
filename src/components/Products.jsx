@@ -32,7 +32,7 @@ export default function Products() {
     const product = state.products.find(p => p.id === id)
     dispatch({ type: 'DELETE_PRODUCT', payload: id })
     setConfirmDeleteId(null)
-    showToast(`${name} removed.`, {
+    showToast(t('removedToast', { name }), {
       undo: () => dispatch({ type: 'RESTORE_PRODUCT', payload: product }),
     })
   }
@@ -40,10 +40,10 @@ export default function Products() {
   function ProductActions({ p }) {
     return (
       <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-        <button className="button light" style={btnSm} onClick={() => requirePin(() => openModal(<ProductForm product={p} />))}>Edit</button>
+        <button className="button light" style={btnSm} onClick={() => requirePin(() => openModal(<ProductForm product={p} />))}>{t('editProduct')}</button>
         {confirmDeleteId === p.id
-          ? <button className="button" style={{ ...btnSm, background: 'var(--red)' }} onClick={() => requirePin(() => deleteProduct(p.id, p.name))}>Sure?</button>
-          : <button className="button light" style={{ ...btnSm, color: 'var(--red)' }} onClick={() => setConfirmDeleteId(p.id)}>Delete</button>
+          ? <button className="button" style={{ ...btnSm, background: 'var(--red)' }} onClick={() => requirePin(() => deleteProduct(p.id, p.name))}>{t('sureBtn')}</button>
+          : <button className="button light" style={{ ...btnSm, color: 'var(--red)' }} onClick={() => setConfirmDeleteId(p.id)}>{t('deleteProduct')}</button>
         }
       </div>
     )
@@ -72,7 +72,7 @@ export default function Products() {
           📦 {t('bulkRestock')}{totalAlerts > 0 ? ` (${totalAlerts})` : ''}
         </button>
         <button className="button light" onClick={() => openModal(<BarcodeScanner />)}>
-          📷 Scan
+          📷 {t('scanBtn')}
         </button>
       </div>
 
@@ -95,7 +95,7 @@ export default function Products() {
                 <div key={p.id} className="prod-row">
                   <div className="prod-info">
                     <strong>{p.name}</strong>
-                    <span>{money(p.price)} · Cost {money(p.cost)}</span>
+                    <span>{money(p.price)} · {t('costInlineLabel')} {money(p.cost)}</span>
                     <div className="prod-bar-wrap">
                       <div className="prod-bar" style={{ width: `${pct}%`, background: isOut ? 'var(--red)' : isLow ? 'var(--yellow)' : 'var(--green)' }} />
                     </div>
@@ -146,7 +146,7 @@ export default function Products() {
                         className="restock-btn"
                         onClick={() => requirePin(() => openModal(<RestockModal product={p} />))}
                       >
-                        Restock
+                        {t('restock')}
                       </button>
                     </div>
                   </div>

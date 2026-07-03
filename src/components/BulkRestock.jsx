@@ -3,6 +3,7 @@ import { useStore } from '../store.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
 import { usePinGate } from './PinGate.jsx'
+import { useLang } from '../useLang.js'
 
 function getRecoveryPct(product, transactions) {
   if (product.type !== 'flexible' || !product.invested) return 0
@@ -16,6 +17,7 @@ function getRecoveryPct(product, transactions) {
 export default function BulkRestock() {
   const { state, dispatch } = useStore()
   const showToast = useToast()
+  const t = useLang()
   const { requirePin } = usePinGate()
   const [values, setValues] = useState({})
   const [filter, setFilter] = useState('all')
@@ -34,9 +36,9 @@ export default function BulkRestock() {
           : { productId, qty: Number(v) }
       })
 
-    if (!updates.length) { showToast('Enter at least one value to restock.'); return }
+    if (!updates.length) { showToast(t('enterAtLeastOne')); return }
     dispatch({ type: 'BULK_RESTOCK', payload: updates })
-    showToast(`${updates.length} product${updates.length > 1 ? 's' : ''} restocked!`)
+    showToast(updates.length === 1 ? t('restockedCountOne') : t('restockedCountMany', { count: updates.length }))
     setValues({})
   }
 
@@ -64,17 +66,17 @@ export default function BulkRestock() {
       {/* Filter tabs */}
       <div className="report-periods" style={{ marginBottom: 18 }}>
         <button className={`period-tab${filter === 'all' ? ' is-active' : ''}`} onClick={() => setFilter('all')}>
-          All Products
+          {t('allProductsHeader')}
         </button>
         <button className={`period-tab${filter === 'low' ? ' is-active' : ''}`} onClick={() => setFilter('low')}>
-          Needs Restock {needsRestockIds.size > 0 && <span className="section-count">{needsRestockIds.size}</span>}
+          {t('needsRestockFilter')} {needsRestockIds.size > 0 && <span className="section-count">{needsRestockIds.size}</span>}
         </button>
       </div>
 
       {/* Counted products */}
       {showFixed.length > 0 && (
         <section className="section">
-          <h3 className="section-title">📦 Counted Products</h3>
+          <h3 className="section-title">📦 {t('countedProducts')}</h3>
           <div className="bulk-list">
             {showFixed.map(p => {
               const isLow = p.qty <= p.low
@@ -84,12 +86,12 @@ export default function BulkRestock() {
                   <div className="bulk-info">
                     <strong>{p.name}</strong>
                     <span>
-                      {isOut ? '⚠ Out of stock' : isLow ? `⚠ Low — ${p.qty} left` : `${p.qty} in stock`}
+                      {isOut ? `⚠ ${t('outOfStockPill')}` : isLow ? `⚠ ${t('lowStockLeftWarn', { qty: p.qty })}` : t('inStockLabel', { qty: p.qty })}
                       {' · '}{money(p.price)}
                     </span>
                   </div>
                   <div className="bulk-input-wrap">
-                    <span className="bulk-label">+ units</span>
+                    <span className="bulk-label">{t('plusUnitsLabel')}</span>
                     <input
                       className="bulk-input"
                       type="number"
@@ -109,7 +111,7 @@ export default function BulkRestock() {
       {/* Flexible products */}
       {showFlex.length > 0 && (
         <section className="section">
-          <h3 className="section-title">⚖️ Flexible Products</h3>
+          <h3 className="section-title">⚖️ {t('flexibleProducts')}</h3>
           <div className="bulk-list">
             {showFlex.map(p => {
               const pct = getRecoveryPct(p, state.transactions)
@@ -120,12 +122,12 @@ export default function BulkRestock() {
                   <div className="bulk-info">
                     <strong>{p.name}</strong>
                     <span>
-                      {isOut ? '⚠ Likely sold out' : isLow ? `⚠ Running low — ${pct}% sold` : `${pct}% sold`}
-                      {' · '}Invested {money(p.invested)}
+                      {isOut ? `⚠ ${t('likelySoldOutWarn')}` : isLow ? `⚠ ${t('runningLowSoldWarn', { pct })}` : t('pctSoldLabel', { pct })}
+                      {' · '}{t('invested')} {money(p.invested)}
                     </span>
                   </div>
                   <div className="bulk-input-wrap">
-                    <span className="bulk-label">+ ₦</span>
+                    <span className="bulk-label">{t('plusNairaLabel')}</span>
                     <input
                       className="bulk-input"
                       type="number"
@@ -143,7 +145,7 @@ export default function BulkRestock() {
       )}
 
       {showFixed.length === 0 && showFlex.length === 0 && (
-        <div className="empty">No products need restocking right now.</div>
+        <div className="empty">{t('noNeedRestock')}</div>
       )}
 
       {/* Sticky apply button */}
@@ -154,7 +156,7 @@ export default function BulkRestock() {
           onClick={apply}
           disabled={filledCount === 0}
         >
-          {filledCount > 0 ? `✓ Restock ${filledCount} Product${filledCount > 1 ? 's' : ''}` : 'Enter Quantities Above'}
+          {filledCount > 0 ? `✓ ${filledCount === 1 ? t('restockNProductsBtnOne') : t('restockNProductsBtnMany', { count: filledCount })}` : t('enterQuantitiesAbove')}
         </button>
       </div>
     </div>

@@ -1,24 +1,31 @@
 import { createContext, useContext, useReducer, useEffect, useState } from 'react'
 import { getOrCreateCloudMeta, pushState } from './sync.js'
+import { TOUR_SEEN_KEY } from './utils.js'
 
 const ACTIVE_KEY = 'ulahia-active-profile'
 const profileKey = id => `ulahia-profile-${id}`
 
 const starterState = {
   setupDone: false,
-  language: 'pidgin',
+  language: 'en',
   view: 'home',
+  // Device-local credential (hashed) — like inventoryPin, never synced to cloud
+  auth: { passwordHash: null },
   shop: { name: '', owner: '', phone: '' },
   products: [],
   transactions: [],
   customers: [],
-  cart: [],
+  orders: [{ id: 'o1', number: 1, customLabel: null, items: [], createdAt: new Date().toISOString() }],
+  activeOrderId: 'o1',
+  orderSeq: 1,
   inventoryPin: null,
   inventoryOtp: null,
   darkMode: false,
   highContrast: false,
   pinnedProducts: [],
   onboardingDone: false,
+  expenses: [],
+  withdrawals: [],
 }
 
 // ─── Helper for transaction time offsets ─────────────────────────────────────
@@ -458,6 +465,22 @@ const DEMO_TRANSACTIONS = [
     total:4500, profit:900, mode:'cash', customerId:null, customerName:'', customerPhone:'', amountPaid:4500, balance:0 },
 ]
 
+// ─── Expenses ─────────────────────────────────────────────────────────────────
+const DEMO_EXPENSES = [
+  { id: 'e1', time: h(2),   category: 'transport', amount: 500,   note: 'Okada to market' },
+  { id: 'e2', time: h(6),   category: 'fuel',       amount: 3000,  note: 'Generator fuel' },
+  { id: 'e3', time: h(26),  category: 'rent',       amount: 25000, note: '' },
+  { id: 'e4', time: h(50),  category: 'utilities',  amount: 4000,  note: 'NEPA bill' },
+  { id: 'e5', time: h(75),  category: 'salary',     amount: 10000, note: 'Shop assistant' },
+  { id: 'e6', time: h(100), category: 'other',      amount: 1200,  note: 'Nylon bags' },
+]
+
+// ─── Withdrawals ──────────────────────────────────────────────────────────────
+const DEMO_WITHDRAWALS = [
+  { id: 'w1', time: h(3),  amount: 5000,  note: 'Family upkeep' },
+  { id: 'w2', time: h(52), amount: 10000, note: '' },
+]
+
 const demoState = {
   setupDone: true,
   language: 'pidgin',
@@ -466,13 +489,18 @@ const demoState = {
   products: DEMO_PRODUCTS,
   transactions: DEMO_TRANSACTIONS,
   customers: DEMO_CUSTOMERS,
-  cart: [],
+  orders: [{ id: 'demo-o1', number: 1, customLabel: null, items: [], createdAt: new Date().toISOString() }],
+  activeOrderId: 'demo-o1',
+  orderSeq: 1,
   inventoryPin: null,
   inventoryOtp: null,
   darkMode: false,
   highContrast: false,
   pinnedProducts: [],
   onboardingDone: true,
+  practiceDone: true,
+  expenses: DEMO_EXPENSES,
+  withdrawals: DEMO_WITHDRAWALS,
 }
 
 function loadState(profileId) {
@@ -522,20 +550,31 @@ function loadState(profileId) {
             payments: [],
           }))
       }
-      if (!saved.cart) saved.cart = []
+      if (!saved.orders) {
+        const items = (saved.cart || []).map(i =>
+          i.cartItemId ? i : { ...i, cartItemId: i.productId || crypto.randomUUID() }
+        )
+        const id = crypto.randomUUID()
+        saved.orders = [{ id, number: 1, customLabel: null, items, createdAt: new Date().toISOString() }]
+        saved.activeOrderId = id
+        saved.orderSeq = 1
+      }
+      delete saved.cart
       if (saved.inventoryPin === undefined) saved.inventoryPin = null
       if (saved.inventoryOtp === undefined) saved.inventoryOtp = null
-      saved.cart = saved.cart.map(i =>
-        i.cartItemId ? i : { ...i, cartItemId: i.productId || crypto.randomUUID() }
-      )
+      if (saved.auth === undefined) saved.auth = { passwordHash: null }
       if (saved.setupDone === undefined) saved.setupDone = true
       if (saved.darkMode === undefined) saved.darkMode = false
       if (saved.highContrast === undefined) saved.highContrast = false
       if (!saved.pinnedProducts) saved.pinnedProducts = []
+      if (!saved.expenses) saved.expenses = []
+      if (!saved.withdrawals) saved.withdrawals = []
       if (saved.onboardingDone === undefined) {
         // Existing users who already have products skip onboarding
         saved.onboardingDone = Array.isArray(saved.products) && saved.products.length > 0
+        if (saved.onboardingDone) localStorage.setItem(TOUR_SEEN_KEY, '1')
       }
+      if (saved.practiceDone === undefined) saved.practiceDone = true
       saved.products = saved.products.map(p => p.type ? p : { ...p, type: 'fixed' })
       saved.transactions = saved.transactions.map(t => ({
         ...t,
@@ -547,11 +586,39 @@ function loadState(profileId) {
   return profileId === 'demo' ? structuredClone(demoState) : structuredClone(starterState)
 }
 
+export function getActiveOrder(state) {
+  return state.orders.find(o => o.id === state.activeOrderId) || state.orders[0]
+}
+
+function updateActiveOrderItems(state, updater) {
+  return {
+    ...state,
+    orders: state.orders.map(o =>
+      o.id === state.activeOrderId ? { ...o, items: updater(o.items) } : o
+    ),
+  }
+}
+
+function freshOrder(number) {
+  return { id: crypto.randomUUID(), number, customLabel: null, items: [], createdAt: new Date().toISOString() }
+}
+
 function reducer(state, action) {
   switch (action.type) {
 
-    case 'COMPLETE_SETUP':
-      return { ...state, setupDone: true, shop: action.payload, view: 'home' }
+    case 'COMPLETE_SETUP': {
+      // New form: { shop, passwordHash } — legacy callers pass the shop directly
+      const { shop, passwordHash } = action.payload.shop
+        ? action.payload
+        : { shop: action.payload, passwordHash: null }
+      return {
+        ...state,
+        setupDone: true,
+        shop,
+        auth: { ...state.auth, passwordHash: passwordHash ?? state.auth?.passwordHash ?? null },
+        view: 'home',
+      }
+    }
 
     case 'UPDATE_SHOP':
       return { ...state, shop: { ...state.shop, ...action.payload } }
@@ -565,57 +632,71 @@ function reducer(state, action) {
     case 'ADD_TO_CART': {
       const product = state.products.find(p => p.id === action.payload)
       if (!product || product.type === 'flexible') return state
-      const existing = state.cart.find(i => i.productId === product.id)
+      const activeItems = getActiveOrder(state).items
+      const existing = activeItems.find(i => i.productId === product.id)
       const currentQty = existing?.qty || 0
       if (currentQty >= product.qty) return state
-      if (existing) {
-        return {
-          ...state,
-          cart: state.cart.map(i =>
-            i.productId === product.id ? { ...i, qty: i.qty + 1 } : i
-          ),
-        }
-      }
-      return {
-        ...state,
-        cart: [
-          ...state.cart,
-          { cartItemId: product.id, type: 'fixed', productId: product.id, name: product.name, price: product.price, cost: product.cost, qty: 1, subtotal: product.price },
-        ],
-      }
+      return updateActiveOrderItems(state, items =>
+        existing
+          ? items.map(i => i.productId === product.id ? { ...i, qty: i.qty + 1 } : i)
+          : [...items, { cartItemId: product.id, type: 'fixed', productId: product.id, name: product.name, price: product.price, cost: product.cost, qty: 1, subtotal: product.price }]
+      )
     }
 
     case 'ADD_FLEXIBLE_TO_CART': {
       const { productId, name, amount } = action.payload
       const amt = Number(amount)
       if (!amt || amt <= 0) return state
-      return {
-        ...state,
-        cart: [
-          ...state.cart,
-          { cartItemId: crypto.randomUUID(), type: 'flexible', productId, name, price: amt, cost: 0, qty: 1, subtotal: amt },
-        ],
-      }
+      return updateActiveOrderItems(state, items => [
+        ...items,
+        { cartItemId: crypto.randomUUID(), type: 'flexible', productId, name, price: amt, cost: 0, qty: 1, subtotal: amt },
+      ])
     }
 
     case 'UPDATE_CART_QTY': {
       const { cartItemId, qty } = action.payload
       if (qty <= 0) {
-        return { ...state, cart: state.cart.filter(i => i.cartItemId !== cartItemId) }
+        return updateActiveOrderItems(state, items => items.filter(i => i.cartItemId !== cartItemId))
       }
-      const item = state.cart.find(i => i.cartItemId === cartItemId)
+      const item = getActiveOrder(state).items.find(i => i.cartItemId === cartItemId)
       const product = item ? state.products.find(p => p.id === item.productId) : null
       const maxQty = !product || product.type === 'flexible' ? Infinity : product.qty
-      return {
-        ...state,
-        cart: state.cart.map(i =>
-          i.cartItemId === cartItemId ? { ...i, qty: Math.min(qty, maxQty) } : i
-        ),
-      }
+      return updateActiveOrderItems(state, items =>
+        items.map(i => i.cartItemId === cartItemId ? { ...i, qty: Math.min(qty, maxQty) } : i)
+      )
     }
 
     case 'CLEAR_CART':
-      return { ...state, cart: [] }
+      return updateActiveOrderItems(state, () => [])
+
+    case 'NEW_ORDER': {
+      const order = freshOrder(state.orderSeq + 1)
+      return {
+        ...state,
+        orders: [...state.orders, order],
+        activeOrderId: order.id,
+        orderSeq: order.number,
+      }
+    }
+
+    case 'SWITCH_ORDER':
+      return { ...state, activeOrderId: action.payload }
+
+    case 'RENAME_ORDER':
+      return {
+        ...state,
+        orders: state.orders.map(o => o.id === action.payload.orderId ? { ...o, customLabel: action.payload.label } : o),
+      }
+
+    case 'CLOSE_ORDER': {
+      const remaining = state.orders.filter(o => o.id !== action.payload)
+      if (remaining.length > 0) {
+        const activeOrderId = state.activeOrderId === action.payload ? remaining[0].id : state.activeOrderId
+        return { ...state, orders: remaining, activeOrderId }
+      }
+      const order = freshOrder(state.orderSeq + 1)
+      return { ...state, orders: [order], activeOrderId: order.id, orderSeq: order.number }
+    }
 
     case 'COMPLETE_TRANSACTION': {
       const { items, total, profit, mode, customer, amountPaid, balance } = action.payload
@@ -670,7 +751,21 @@ function reducer(state, action) {
         }
       }
 
-      return { ...state, products, transactions: [transaction, ...state.transactions], customers, cart: [] }
+      const remainingOrders = state.orders.filter(o => o.id !== state.activeOrderId)
+      let orders = remainingOrders
+      let activeOrderId = state.activeOrderId
+      let orderSeq = state.orderSeq
+      if (remainingOrders.length === 0) {
+        const order = freshOrder(orderSeq + 1)
+        orders = [order]
+        activeOrderId = order.id
+        orderSeq = order.number
+      } else {
+        const closedIdx = state.orders.findIndex(o => o.id === state.activeOrderId)
+        activeOrderId = (state.orders[closedIdx + 1] || remainingOrders[remainingOrders.length - 1]).id
+      }
+
+      return { ...state, products, transactions: [transaction, ...state.transactions], customers, orders, activeOrderId, orderSeq }
     }
 
     case 'ADD_PAYMENT': {
@@ -746,7 +841,8 @@ function reducer(state, action) {
     case 'IMPORT_STATE': {
       const imported = action.payload
       if (!imported || !Array.isArray(imported.products)) return state
-      return { ...starterState, ...imported, view: 'home', cart: [] }
+      const order = freshOrder(1)
+      return { ...starterState, ...imported, view: 'home', orders: [order], activeOrderId: order.id, orderSeq: 1 }
     }
 
     case 'RESET_DEMO':
@@ -782,8 +878,49 @@ function reducer(state, action) {
     case 'RESTORE_PRODUCT':
       return { ...state, products: [action.payload, ...state.products] }
 
+    case 'ADD_EXPENSE': {
+      const { category, amount, note } = action.payload
+      const expense = {
+        id: crypto.randomUUID(),
+        time: new Date().toISOString(),
+        category,
+        amount: Number(amount),
+        note: note || '',
+      }
+      return { ...state, expenses: [expense, ...state.expenses] }
+    }
+
+    case 'DELETE_EXPENSE':
+      return { ...state, expenses: state.expenses.filter(e => e.id !== action.payload) }
+
+    case 'RESTORE_EXPENSE':
+      return { ...state, expenses: [action.payload, ...state.expenses] }
+
+    case 'ADD_WITHDRAWAL': {
+      const { amount, note } = action.payload
+      const withdrawal = {
+        id: crypto.randomUUID(),
+        time: new Date().toISOString(),
+        amount: Number(amount),
+        note: note || '',
+      }
+      return { ...state, withdrawals: [withdrawal, ...state.withdrawals] }
+    }
+
+    case 'DELETE_WITHDRAWAL':
+      return { ...state, withdrawals: state.withdrawals.filter(w => w.id !== action.payload) }
+
+    case 'RESTORE_WITHDRAWAL':
+      return { ...state, withdrawals: [action.payload, ...state.withdrawals] }
+
     case 'COMPLETE_ONBOARDING':
       return { ...state, onboardingDone: true, view: 'home' }
+
+    case 'RESTART_ONBOARDING':
+      return { ...state, onboardingDone: false }
+
+    case 'COMPLETE_DEMO_PRACTICE':
+      return { ...state, practiceDone: true }
 
     default:
       return state
@@ -824,15 +961,16 @@ export function StoreProvider({ children }) {
   function enterDemoTour() {
     // Save current profile first
     localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
-    // Reset demo state fresh with tour enabled
-    const demoWithTour = { ...structuredClone(demoState), onboardingDone: false }
-    localStorage.setItem(profileKey('demo'), JSON.stringify(demoWithTour))
+    // Only show the tour (and the practice-sale walkthrough that follows it)
+    // if this user has genuinely never seen it before — anywhere, main or demo.
+    // Once seen, entering demo just drops them into a normal demo shop.
+    const tourSeen = localStorage.getItem(TOUR_SEEN_KEY) === '1'
+    // Demo keeps the language the user is already reading the app in
+    const demoFresh = { ...structuredClone(demoState), language: state.language, onboardingDone: tourSeen, practiceDone: tourSeen }
+    localStorage.setItem(profileKey('demo'), JSON.stringify(demoFresh))
     localStorage.setItem(ACTIVE_KEY, 'demo')
-    // Clear tour flags so it starts from step 0
-    localStorage.removeItem('ulahia-ob-done')
-    localStorage.removeItem('ulahia-ob-step')
     setActiveProfile('demo')
-    dispatch({ type: 'LOAD_PROFILE', payload: demoWithTour })
+    dispatch({ type: 'LOAD_PROFILE', payload: demoFresh })
   }
 
   return (

@@ -24,9 +24,9 @@ export default function Settings() {
   }
 
   function save() {
-    if (!form.name.trim()) { showToast('Shop name is required.'); return }
+    if (!form.name.trim()) { showToast(t('shopNameRequired')); return }
     dispatch({ type: 'UPDATE_SHOP', payload: form })
-    showToast('Settings saved.')
+    showToast(t('settingsSaved'))
   }
 
   function importData(e) {
@@ -36,10 +36,10 @@ export default function Settings() {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result)
-        if (!Array.isArray(data.products)) { showToast('Invalid backup file.'); return }
+        if (!Array.isArray(data.products)) { showToast(t('invalidBackupFile')); return }
         dispatch({ type: 'IMPORT_STATE', payload: data })
-        showToast('Data restored!')
-      } catch { showToast('Could not read file.') }
+        showToast(t('dataRestored'))
+      } catch { showToast(t('couldNotReadFile')) }
     }
     reader.readAsText(file)
     e.target.value = ''
@@ -54,7 +54,7 @@ export default function Settings() {
     a.download = `${state.shop.name || 'ulahia'}-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-    showToast('Data exported.')
+    showToast(t('dataExported'))
   }
 
   const cloudMeta = isSupabaseEnabled ? getOrCreateCloudMeta() : null
@@ -62,7 +62,7 @@ export default function Settings() {
 
   function handleSwitch() {
     switchProfile(isDemo ? 'main' : 'demo')
-    showToast(isDemo ? 'Switched to your shop.' : 'Switched to Demo.')
+    showToast(isDemo ? t('switchedToShop') : t('switchedToDemo'))
   }
 
   return (
@@ -72,29 +72,29 @@ export default function Settings() {
         <div style={{ display: 'grid', gap: 14 }}>
           <label className="label">
             {t('shopName')}
-            <input {...field('name')} placeholder="e.g. Mama Ngozi Store" />
+            <input {...field('name')} placeholder={t('shopNamePlaceholderSettings')} />
           </label>
           <label className="label">
             {t('yourName')}
-            <input {...field('owner')} placeholder="e.g. Ngozi" />
+            <input {...field('owner')} placeholder={t('ownerNamePlaceholder')} />
           </label>
           <label className="label">
             {t('phoneNumber')}
-            <input {...field('phone')} type="tel" placeholder="0803 000 0000" />
+            <input {...field('phone')} type="tel" placeholder={t('shopPhonePlaceholder')} />
           </label>
           <button className="button" onClick={save}>{t('saveChanges')}</button>
         </div>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ margin: '0 0 8px' }}>Backup &amp; Export</h3>
+        <h3 style={{ margin: '0 0 8px' }}>{t('backupExportTitle')}</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 14px' }}>
-          Download all your shop data as a JSON file you can keep as a backup.
+          {t('backupExportDesc')}
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button className="button secondary" onClick={exportData}>⬇ Export Data</button>
+          <button className="button secondary" onClick={exportData}>⬇ {t('exportData')}</button>
           <label className="button light" style={{ cursor: 'pointer', minHeight: 42, display: 'flex', alignItems: 'center', padding: '0 16px' }}>
-            ⬆ Restore Backup
+            ⬆ {t('restoreBackupBtn')}
             <input type="file" accept=".json" style={{ display: 'none' }} onChange={importData} />
           </label>
         </div>
@@ -102,9 +102,9 @@ export default function Settings() {
 
       {cloudMeta && (
         <section className="panel" data-tour="cloud-section" style={{ marginTop: 16 }}>
-          <h3 style={{ margin: '0 0 8px' }}>Cloud Backup</h3>
+          <h3 style={{ margin: '0 0 8px' }}>{t('cloudBackupTitle')}</h3>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 14px', lineHeight: 1.5 }}>
-            Your data syncs automatically every time you make a change. If you switch phones, enter this code on the new device to restore everything.
+            {t('cloudBackupDesc')}
           </p>
           <div style={{
             background: 'var(--bg)',
@@ -121,30 +121,28 @@ export default function Settings() {
             {cloudMeta.recoveryCode}
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0, textAlign: 'center' }}>
-            Write this down or screenshot it — it's your key to restore on any device.
+            {t('writeDownCode')}
           </p>
         </section>
       )}
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ margin: '0 0 10px' }}>Accounts</h3>
+        <h3 style={{ margin: '0 0 10px' }}>{t('accountsTitle')}</h3>
         <div style={{ marginBottom: 12 }}>
           <span style={{
             display: 'inline-block', padding: '4px 12px', borderRadius: 20,
             background: isDemo ? '#fff3bf' : '#e6f7f1',
-            color: isDemo ? '#4d3200' : '#087f5b',
+            color: isDemo ? '#4d3200' : '#0F6B63',
             fontSize: '0.83rem', fontWeight: 700, letterSpacing: '0.02em',
           }}>
-            {isDemo ? 'Demo Account' : 'My Shop'}
+            {isDemo ? t('demoAccountBadge') : t('myShopBadge')}
           </span>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 14px' }}>
-          {isDemo
-            ? 'You are on the Demo account. Your real shop data is saved and untouched.'
-            : 'Switch to Demo to explore sample data. Your shop data stays safe.'}
+          {isDemo ? t('onDemoDesc') : t('switchToDemoDesc')}
         </p>
         <button className="button light" onClick={handleSwitch}>
-          {isDemo ? '→ Switch to My Shop' : '→ Switch to Demo'}
+          → {isDemo ? t('switchToMyShopBtn') : t('switchToDemoBtn')}
         </button>
       </section>
 
@@ -156,6 +154,7 @@ export default function Settings() {
 function SecuritySection() {
   const { state, dispatch } = useStore()
   const showToast = useToast()
+  const t = useLang()
   const hasPin = !!state.inventoryPin
   const [mode, setMode] = useState('idle') // 'idle' | 'set' | 'change' | 'remove'
   const [newPin, setNewPin] = useState('')
@@ -171,7 +170,7 @@ function SecuritySection() {
     if (!otpValid) { setOtpCountdown(''); return }
     function tick() {
       const secs = Math.max(0, Math.round((new Date(otp.expiresAt) - Date.now()) / 1000))
-      if (secs <= 0) { setOtpCountdown('Expired'); return }
+      if (secs <= 0) { setOtpCountdown(t('otpExpiredLabel')); return }
       const m = Math.floor(secs / 60)
       const s = secs % 60
       setOtpCountdown(`${m}:${String(s).padStart(2, '0')}`)
@@ -186,33 +185,33 @@ function SecuritySection() {
   }
 
   function savePin() {
-    if (newPin.length < 4) { setPinError('PIN must be at least 4 digits.'); return }
-    if (newPin !== confirmPin) { setPinError('PINs do not match.'); return }
-    if (!/^\d+$/.test(newPin)) { setPinError('PIN must be numbers only.'); return }
+    if (newPin.length < 4) { setPinError(t('pinMinDigitsErr')); return }
+    if (newPin !== confirmPin) { setPinError(t('pinsNoMatchErr')); return }
+    if (!/^\d+$/.test(newPin)) { setPinError(t('pinNumbersOnlyErr')); return }
     dispatch({ type: 'SET_INVENTORY_PIN', payload: hashPin(newPin) })
-    showToast('Inventory PIN set.')
+    showToast(t('pinSetToast'))
     resetForm()
   }
 
   function changePin() {
     if (!currentPin || hashPin(currentPin) !== state.inventoryPin) {
-      setPinError('Current PIN is wrong.'); return
+      setPinError(t('currentPinWrongErr')); return
     }
-    if (newPin.length < 4) { setPinError('New PIN must be at least 4 digits.'); return }
-    if (newPin !== confirmPin) { setPinError('New PINs do not match.'); return }
-    if (!/^\d+$/.test(newPin)) { setPinError('PIN must be numbers only.'); return }
+    if (newPin.length < 4) { setPinError(t('newPinMinDigitsErr')); return }
+    if (newPin !== confirmPin) { setPinError(t('newPinsNoMatchErr')); return }
+    if (!/^\d+$/.test(newPin)) { setPinError(t('pinNumbersOnlyErr')); return }
     dispatch({ type: 'SET_INVENTORY_PIN', payload: hashPin(newPin) })
-    showToast('PIN changed.')
+    showToast(t('pinChangedToast'))
     resetForm()
   }
 
   function removePin() {
     if (!currentPin || hashPin(currentPin) !== state.inventoryPin) {
-      setPinError('Wrong PIN.'); return
+      setPinError(t('wrongPinErr')); return
     }
     dispatch({ type: 'SET_INVENTORY_PIN', payload: null })
     dispatch({ type: 'CLEAR_INVENTORY_OTP' })
-    showToast('Inventory PIN removed.')
+    showToast(t('pinRemovedToast'))
     resetForm()
   }
 
@@ -220,16 +219,16 @@ function SecuritySection() {
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
     dispatch({ type: 'SET_INVENTORY_OTP', payload: { code, expiresAt } })
-    showToast('OTP generated. Share it with your staff.')
+    showToast(t('otpGeneratedToast'))
   }
 
   const inputStyle = { margin: '6px 0 0' }
 
   return (
     <section className="panel" style={{ marginTop: 16 }}>
-      <h3 style={{ margin: '0 0 6px' }}>Security</h3>
+      <h3 style={{ margin: '0 0 6px' }}>{t('securityTitle')}</h3>
       <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 16px', lineHeight: 1.5 }}>
-        Set a PIN to lock inventory changes — adding, editing, restocking. Staff need your PIN or a one-time code (OTP) to proceed.
+        {t('securityDesc')}
       </p>
 
       {/* ── PIN status ── */}
@@ -239,20 +238,20 @@ function SecuritySection() {
             <span style={{
               display: 'inline-block', padding: '4px 12px', borderRadius: 20,
               background: hasPin ? '#e6f7f1' : '#f1f3f5',
-              color: hasPin ? '#087f5b' : 'var(--muted)',
+              color: hasPin ? '#0F6B63' : 'var(--muted)',
               fontSize: '0.83rem', fontWeight: 700,
             }}>
-              {hasPin ? '🔒 PIN Active' : '🔓 No PIN'}
+              {hasPin ? `🔒 ${t('pinActiveBadge')}` : `🔓 ${t('noPinBadge')}`}
             </span>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {!hasPin && (
-              <button className="button" onClick={() => setMode('set')}>Set Inventory PIN</button>
+              <button className="button" onClick={() => setMode('set')}>{t('setInventoryPinBtn')}</button>
             )}
             {hasPin && (
               <>
-                <button className="button light" onClick={() => setMode('change')}>Change PIN</button>
-                <button className="button light" style={{ color: 'var(--red)' }} onClick={() => setMode('remove')}>Remove PIN</button>
+                <button className="button light" onClick={() => setMode('change')}>{t('changePinBtn')}</button>
+                <button className="button light" style={{ color: 'var(--red)' }} onClick={() => setMode('remove')}>{t('removePinBtn')}</button>
               </>
             )}
           </div>
@@ -262,18 +261,18 @@ function SecuritySection() {
       {/* ── Set PIN form ── */}
       {mode === 'set' && (
         <div style={{ display: 'grid', gap: 10 }}>
-          <label className="label">New PIN (numbers only, min 4 digits)
+          <label className="label">{t('newPinLabel')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="e.g. 1234" value={newPin} onChange={e => { setNewPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
+              placeholder={t('newPinPlaceholder')} value={newPin} onChange={e => { setNewPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
           </label>
-          <label className="label">Confirm PIN
+          <label className="label">{t('confirmPinLabel')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="Re-enter PIN" value={confirmPin} onChange={e => { setConfirmPin(e.target.value); setPinError('') }} maxLength={8} />
+              placeholder={t('confirmPinPlaceholder')} value={confirmPin} onChange={e => { setConfirmPin(e.target.value); setPinError('') }} maxLength={8} />
           </label>
           {pinError && <p style={{ margin: 0, color: 'var(--red)', fontSize: '0.85rem', fontWeight: 700 }}>{pinError}</p>}
           <div className="row">
-            <button className="button" onClick={savePin}>Save PIN</button>
-            <button className="button light" onClick={resetForm}>Cancel</button>
+            <button className="button" onClick={savePin}>{t('savePinBtn')}</button>
+            <button className="button light" onClick={resetForm}>{t('cancel')}</button>
           </div>
         </div>
       )}
@@ -281,22 +280,22 @@ function SecuritySection() {
       {/* ── Change PIN form ── */}
       {mode === 'change' && (
         <div style={{ display: 'grid', gap: 10 }}>
-          <label className="label">Current PIN
+          <label className="label">{t('currentPinLabel')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="Your current PIN" value={currentPin} onChange={e => { setCurrentPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
+              placeholder={t('currentPinPlaceholder')} value={currentPin} onChange={e => { setCurrentPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
           </label>
-          <label className="label">New PIN
+          <label className="label">{t('newPinLabelShort')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="New PIN" value={newPin} onChange={e => { setNewPin(e.target.value); setPinError('') }} maxLength={8} />
+              placeholder={t('newPinLabelShort')} value={newPin} onChange={e => { setNewPin(e.target.value); setPinError('') }} maxLength={8} />
           </label>
-          <label className="label">Confirm New PIN
+          <label className="label">{t('confirmNewPinLabel')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="Re-enter new PIN" value={confirmPin} onChange={e => { setConfirmPin(e.target.value); setPinError('') }} maxLength={8} />
+              placeholder={t('confirmNewPinPlaceholder')} value={confirmPin} onChange={e => { setConfirmPin(e.target.value); setPinError('') }} maxLength={8} />
           </label>
           {pinError && <p style={{ margin: 0, color: 'var(--red)', fontSize: '0.85rem', fontWeight: 700 }}>{pinError}</p>}
           <div className="row">
-            <button className="button" onClick={changePin}>Change PIN</button>
-            <button className="button light" onClick={resetForm}>Cancel</button>
+            <button className="button" onClick={changePin}>{t('changePinBtn')}</button>
+            <button className="button light" onClick={resetForm}>{t('cancel')}</button>
           </div>
         </div>
       )}
@@ -304,14 +303,14 @@ function SecuritySection() {
       {/* ── Remove PIN form ── */}
       {mode === 'remove' && (
         <div style={{ display: 'grid', gap: 10 }}>
-          <label className="label">Enter current PIN to confirm removal
+          <label className="label">{t('enterCurrentPinConfirm')}
             <input className="field" type="password" inputMode="numeric" style={inputStyle}
-              placeholder="Your PIN" value={currentPin} onChange={e => { setCurrentPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
+              placeholder={t('yourPinPlaceholder')} value={currentPin} onChange={e => { setCurrentPin(e.target.value); setPinError('') }} maxLength={8} autoFocus />
           </label>
           {pinError && <p style={{ margin: 0, color: 'var(--red)', fontSize: '0.85rem', fontWeight: 700 }}>{pinError}</p>}
           <div className="row">
-            <button className="button" style={{ background: 'var(--red)' }} onClick={removePin}>Yes, Remove PIN</button>
-            <button className="button light" onClick={resetForm}>Cancel</button>
+            <button className="button" style={{ background: 'var(--red)' }} onClick={removePin}>{t('yesRemovePinBtn')}</button>
+            <button className="button light" onClick={resetForm}>{t('cancel')}</button>
           </div>
         </div>
       )}
@@ -319,21 +318,21 @@ function SecuritySection() {
       {/* ── OTP Generator — only visible when PIN is active ── */}
       {hasPin && mode === 'idle' && (
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
-          <strong style={{ display: 'block', fontSize: '0.92rem', marginBottom: 6 }}>One-Time Code (OTP)</strong>
+          <strong style={{ display: 'block', fontSize: '0.92rem', marginBottom: 6 }}>{t('otpTitle')}</strong>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Generate a 6-digit code for your staff. It works once and expires in 5 minutes.
+            {t('otpDesc')}
           </p>
           {otpValid ? (
             <div className="otp-display">
               <div className="otp-code">{otp.code}</div>
               <div className="otp-meta">
                 <span className="otp-timer">⏱ {otpCountdown}</span>
-                <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Share this code with your staff</span>
+                <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{t('shareCodeStaff')}</span>
               </div>
-              <button className="button light" style={{ marginTop: 10 }} onClick={generateOtp}>Generate New Code</button>
+              <button className="button light" style={{ marginTop: 10 }} onClick={generateOtp}>{t('generateNewCodeBtn')}</button>
             </div>
           ) : (
-            <button className="button secondary" onClick={generateOtp}>Generate OTP</button>
+            <button className="button secondary" onClick={generateOtp}>{t('generateOtpBtn')}</button>
           )}
         </div>
       )}

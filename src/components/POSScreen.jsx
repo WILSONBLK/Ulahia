@@ -1,17 +1,22 @@
 import { useState, useRef } from 'react'
 
 let _posSearch = ''
-import { useStore } from '../store.jsx'
+import { useStore, getActiveOrder } from '../store.jsx'
 import { useModal } from '../modal.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
 import CheckoutModal from './CheckoutModal.jsx'
 import ProductForm from './ProductForm.jsx'
+import OrderTabs from './OrderTabs.jsx'
 
 export default function POSScreen() {
   const { state, dispatch } = useStore()
   const { openModal } = useModal()
   const t = useLang()
+  const activeOrder = getActiveOrder(state)
+  const activeCart = activeOrder.items
+  const hasMultipleOrders = state.orders.length > 1
+  const activeOrderLabel = activeOrder.customLabel || t('orderCustomerLabel', { n: activeOrder.number })
   const [search, setSearch] = useState(_posSearch)
   function updateSearch(val) { _posSearch = val; setSearch(val) }
   const [activeFlexId, setActiveFlexId] = useState(null)
@@ -43,8 +48,8 @@ export default function POSScreen() {
   const hasPinned = filtered.some(p => pinnedIds.includes(p.id))
   const hasUnpinned = filtered.some(p => !pinnedIds.includes(p.id))
 
-  const cartTotal = state.cart.reduce((sum, i) => sum + i.price * i.qty, 0)
-  const cartCount = state.cart.reduce((sum, i) => sum + i.qty, 0)
+  const cartTotal = activeCart.reduce((sum, i) => sum + i.price * i.qty, 0)
+  const cartCount = activeCart.reduce((sum, i) => sum + i.qty, 0)
 
   function addFixed(productId) {
     dispatch({ type: 'ADD_TO_CART', payload: productId })
@@ -103,14 +108,21 @@ export default function POSScreen() {
         </button>
         <h2 className="pos-title">{t('newSale')}</h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          {state.cart.length > 0 && (
+          <button
+            className="button light"
+            style={{ minHeight: 38, padding: '0 12px', fontSize: '0.88rem' }}
+            onClick={() => dispatch({ type: 'NEW_ORDER' })}
+          >
+            + {t('addCustomer')}
+          </button>
+          {activeCart.length > 0 && (
             confirmClear ? (
               <>
                 <button className="pos-clear-btn" style={{ color: 'var(--red)', fontWeight: 800 }}
                   onClick={() => { dispatch({ type: 'CLEAR_CART' }); setConfirmClear(false) }}>
-                  Sure?
+                  {t('sureBtn')}
                 </button>
-                <button className="pos-back-btn" onClick={() => setConfirmClear(false)}>Keep</button>
+                <button className="pos-back-btn" onClick={() => setConfirmClear(false)}>{t('keepBtn')}</button>
               </>
             ) : (
               <button className="pos-clear-btn" onClick={() => setConfirmClear(true)}>{t('clear')}</button>
@@ -125,6 +137,8 @@ export default function POSScreen() {
           </button>
         </div>
       </div>
+
+      {hasMultipleOrders && <OrderTabs />}
 
       {/* Search */}
       <div className="pos-search-wrap">
@@ -141,15 +155,15 @@ export default function POSScreen() {
       <div className="pos-products">
         {filtered.length === 0 && (
           <div className="empty" style={{ margin: 20 }}>
-            {search ? `No products matching "${search}"` : t('noProductsYet')}
+            {search ? t('noProductsMatching', { query: search }) : t('noProductsYet')}
           </div>
         )}
 
         {filtered.map((product, idx) => {
           const isPinned = pinnedIds.includes(product.id)
           const isFixed = !product.type || product.type === 'fixed'
-          const fixedCartItem = isFixed ? state.cart.find(i => i.productId === product.id) : null
-          const flexCartLines = isFixed ? [] : state.cart.filter(i => i.productId === product.id)
+          const fixedCartItem = isFixed ? activeCart.find(i => i.productId === product.id) : null
+          const flexCartLines = isFixed ? [] : activeCart.filter(i => i.productId === product.id)
           const qty = fixedCartItem?.qty || 0
           const outOfStock = isFixed && product.qty <= 0
           const lowStock = isFixed && product.qty > 0 && product.qty <= product.low
@@ -164,10 +178,10 @@ export default function POSScreen() {
             <div key={product.id} className="pos-product-block">
 
               {showPinnedDivider && (
-                <div className="pos-pinned-divider">⭐ Pinned Products</div>
+                <div className="pos-pinned-divider">⭐ {t('pinnedProductsHeader')}</div>
               )}
               {showOthersDivider && hasPinned && (
-                <div className="pos-pinned-divider" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>All Products</div>
+                <div className="pos-pinned-divider" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>{t('allProductsHeader')}</div>
               )}
 
               {/* Product row */}
@@ -177,7 +191,7 @@ export default function POSScreen() {
                 <button
                   className={`pos-pin-btn${isPinned ? ' is-pinned' : ''}`}
                   onClick={() => togglePin(product.id)}
-                  title={isPinned ? 'Unpin' : 'Pin to top'}
+                  title={isPinned ? t('unpinTitle') : t('pinToTopTitle')}
                 >
                   {isPinned ? '⭐' : '☆'}
                 </button>
@@ -191,11 +205,11 @@ export default function POSScreen() {
                         {profitPerUnit !== null && !outOfStock && (
                           <span className="pos-profit-label">+{money(profitPerUnit)}</span>
                         )}
-                        {lowStock && <span className="pill warn pos-stock-pill">{product.qty} left</span>}
-                        {outOfStock && <span className="pill bad pos-stock-pill">Out of stock</span>}
+                        {lowStock && <span className="pill warn pos-stock-pill">{product.qty} {t('leftSuffix')}</span>}
+                        {outOfStock && <span className="pill bad pos-stock-pill">{t('outOfStockPill')}</span>}
                       </>
                     ) : (
-                      <span className="pos-flex-label">⚖️ Tap to enter amount</span>
+                      <span className="pos-flex-label">⚖️ {t('tapEnterAmount')}</span>
                     )}
                   </div>
                 </div>
@@ -230,7 +244,7 @@ export default function POSScreen() {
                           className="qty-value"
                           style={{ cursor: 'pointer' }}
                           onClick={() => openQtyEdit(product.id, qty)}
-                          title="Tap to type quantity"
+                          title={t('tapTypeQty')}
                         >
                           {qty}
                         </span>
@@ -269,13 +283,13 @@ export default function POSScreen() {
                         onClick={() => addFlex(product)}
                         disabled={!flexAmount || Number(flexAmount) <= 0}
                       >
-                        Add
+                        {t('flexAddBtn')}
                       </button>
                       <button className="flex-cancel-btn" onClick={() => setActiveFlexId(null)}>×</button>
                     </div>
                   ) : (
                     <button className="pos-add-btn flex-trigger" onClick={() => openFlexInput(product.id)}>
-                      + Enter ₦
+                      + {t('enterAmountBtn')}
                     </button>
                   )
                 )}
@@ -300,7 +314,8 @@ export default function POSScreen() {
       {cartCount > 0 && (
         <div className="pos-checkout-bar">
           <div className="pos-cart-summary">
-            <span className="pos-cart-count">{cartCount} {cartCount === 1 ? 'item' : 'items'}</span>
+            {hasMultipleOrders && <span className="pos-cart-order-label">{activeOrderLabel}</span>}
+            <span className="pos-cart-count">{cartCount === 1 ? t('cartItemsOne') : t('cartItemsMany', { n: cartCount })}</span>
             <strong className="pos-cart-total">{money(cartTotal)}</strong>
           </div>
           <button

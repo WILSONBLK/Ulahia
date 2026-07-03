@@ -1,103 +1,112 @@
 import { useState } from 'react'
 import { useStore } from '../store.jsx'
 import { getOrCreateCloudMeta, setCloudMeta, pullByCode, isSupabaseEnabled } from '../sync.js'
-import Logo from './Logo.jsx'
+import { hashPin } from '../utils.js'
+import { useLang } from '../useLang.js'
+import { LogoLockup } from './Logo.jsx'
+import WelcomeScene from './WelcomeScene.jsx'
+import DialCodePicker from './DialCodePicker.jsx'
+import {
+  IconCart, IconReports, IconCloud, IconShield, IconPlay,
+  IconPhone, IconLock, IconEye, IconEyeOff, IconX,
+  IconUser, IconStore, IconGlobe,
+} from './icons.jsx'
 
 const SEEN_KEY = 'ulahia-intro-seen'
 
+const LANG_CODES = { en: 'EN', pidgin: 'PI', yo: 'YO', ig: 'IG', ha: 'HA' }
+
+function LangChip() {
+  const { state, dispatch } = useStore()
+  return (
+    <select
+      className="la-lang-chip"
+      aria-label="Language"
+      value={state.language}
+      onChange={e => dispatch({ type: 'SET_LANGUAGE', payload: e.target.value })}
+    >
+      {Object.entries(LANG_CODES).map(([value, code]) => (
+        <option key={value} value={value}>{code}</option>
+      ))}
+    </select>
+  )
+}
+
+// Reusable password field with show/hide toggle
+function PasswordField({ label, placeholder, value, onChange, autoComplete = 'new-password' }) {
+  const [show, setShow] = useState(false)
+  return (
+    <label className="label">
+      {label}
+      <span className="la-input-group">
+        <span className="la-input-icon"><IconLock size={19} /></span>
+        <input
+          className="la-input"
+          type={show ? 'text' : 'password'}
+          placeholder={placeholder}
+          value={value}
+          autoComplete={autoComplete}
+          onChange={onChange}
+        />
+        <button
+          type="button"
+          className="la-input-btn"
+          aria-label={show ? 'Hide password' : 'Show password'}
+          onClick={() => setShow(s => !s)}
+        >
+          {show ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+        </button>
+      </span>
+    </label>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Intro slides — shown only on the very first visit, never again
+// Welcome — single screen: brand, value props, Get Started / Explore Demo.
 // ─────────────────────────────────────────────────────────────────────────────
-const SLIDES = [
-  {
-    isLogo: true,
-    title: 'Ulahia',
-    subtitle: 'Simple Shop Book',
-    body: 'Built for small shop owners who want to know their sales, stock, profit, and debts — without stress.',
-  },
-  {
-    icon: '💰',
-    title: 'Record Every Sale Fast',
-    body: 'Tap a product, pick how the customer paid — cash, transfer, or credit — and you\'re done. Works offline too.',
-  },
-  {
-    icon: '📦',
-    title: 'Know Your Stock & Debts',
-    body: 'See what is running low before it runs out. Track who owes you and send a WhatsApp reminder in one tap.',
-  },
-  {
-    icon: '📊',
-    title: 'See Your Profit Every Day',
-    body: 'Today, this week, this month — Ulahia always tells you exactly how much money your shop is making.',
-  },
-  {
-    icon: '🌍',
-    title: 'In Your Language',
-    body: 'Switch between English, Pidgin, Yoruba, Igbo, and Hausa at any time. Ulahia speaks your language.',
-  },
+const FEATURES = [
+  { Icon: IconReports, titleKey: 'laFeat1Title', bodyKey: 'laFeat1Sub', tone: 'green' },
+  { Icon: IconCart,    titleKey: 'laFeat2Title', bodyKey: 'laFeat2Sub', tone: 'orange' },
+  { Icon: IconCloud,   titleKey: 'laFeat3Title', bodyKey: 'laFeat3Sub', tone: 'teal' },
+  { Icon: IconShield,  titleKey: 'laFeat4Title', bodyKey: 'laFeat4Sub', tone: 'purple' },
 ]
 
-function IntroSlides({ onDone }) {
-  const [idx, setIdx] = useState(0)
-  const slide = SLIDES[idx]
-  const isLast = idx === SLIDES.length - 1
-
-  function next() {
-    if (isLast) { onDone(); return }
-    setIdx(i => i + 1)
-  }
-
+function Welcome({ onSignup, onLogin, onDemo }) {
+  const t = useLang()
   return (
-    <div className="la-intro">
-      <button className="la-skip-btn" onClick={onDone}>Skip</button>
+    <div className="la-welcome">
+      <WelcomeScene />
 
-      <div className="la-intro-slide">
-        {slide.isLogo
-          ? <div className="la-intro-logo-wrap"><Logo size={88} /></div>
-          : <div className="la-intro-icon">{slide.icon}</div>
-        }
-        <h1 className="la-intro-title">{slide.title}</h1>
-        {slide.subtitle && <p className="la-intro-subtitle">{slide.subtitle}</p>}
-        <p className="la-intro-body">{slide.body}</p>
-      </div>
+      <div className="la-welcome-scroll">
+        <div className="la-welcome-brand">
+          <LogoLockup size={46} />
+        </div>
 
-      <div className="la-intro-footer">
-        <div className="la-intro-dots">
-          {SLIDES.map((_, i) => (
-            <span key={i} className={`la-dot ${i === idx ? 'la-dot--active' : ''}`} />
+        <h1 className="la-welcome-title">{t('laWelcomeTo')}<br />Ulahia</h1>
+        <p className="la-welcome-tagline">{t('laTagline2')}</p>
+        <p className="la-welcome-body">{t('laWelcomeIntro')}</p>
+
+        <div className="la-welcome-features">
+          {FEATURES.map(({ Icon, titleKey, bodyKey, tone }) => (
+            <div className="la-feature" key={titleKey}>
+              <span className={`la-feature-icon la-feature-icon--${tone}`}><Icon /></span>
+              <span className="la-feature-text">
+                <strong>{t(titleKey)}</strong>
+                <span>{t(bodyKey)}</span>
+              </span>
+            </div>
           ))}
         </div>
-        <button className="button la-next-btn" onClick={next}>
-          {isLast ? 'Get Started →' : 'Next →'}
+      </div>
+
+      <div className="la-welcome-footer">
+        <button className="button la-primary-btn" onClick={onSignup}>{t('laGetStartedBtn')}</button>
+        <button className="la-ghost-btn" onClick={onDemo}>
+          <IconPlay size={19} /> {t('laExploreDemoBtn')}
         </button>
-      </div>
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Auth choice — Sign Up vs Log In (shown every visit after first)
-// ─────────────────────────────────────────────────────────────────────────────
-function AuthChoice({ onSignup, onLogin }) {
-  return (
-    <div className="la-auth-page la-choice-page">
-      <div className="la-auth-card">
-        <div className="la-choice-logo">
-          <Logo size={56} />
-          <div>
-            <strong className="la-choice-name">Ulahia</strong>
-            <span className="la-choice-tagline">Simple Shop Book</span>
-          </div>
-        </div>
-        <h2 className="la-auth-title">Welcome!</h2>
-        <p className="la-auth-sub">Are you new here, or do you already have an account?</p>
-        <div className="la-choice-btns">
-          <button className="button la-signup-btn" onClick={onSignup}>
-            🛍️ I'm New — Sign Up Free
-          </button>
-          <button className="button light la-login-btn" onClick={onLogin}>
-            🔑 I Have an Account — Log In
-          </button>
+        <button className="la-text-link" onClick={onLogin}>{t('laLoginChoiceBtn')}</button>
+        <div className="la-welcome-dots" aria-hidden="true">
+          <span className="la-dot la-dot--active" /><span className="la-dot" /><span className="la-dot" />
         </div>
       </div>
     </div>
@@ -105,50 +114,215 @@ function AuthChoice({ onSignup, onLogin }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sign-up form
+// Create Account — approved mockup: icon fields, split phone row,
+// password + confirm, terms checkbox gating the primary action.
 // ─────────────────────────────────────────────────────────────────────────────
-function SignupForm({ onBack, onDone }) {
+function SignupForm({ onBack, onDone, onLogin }) {
+  const t = useLang()
   const [name, setName] = useState('')
-  const [shopName, setShopName] = useState('')
+  const [country, setCountry] = useState('NG')
+  const [dial, setDial] = useState('+234')
   const [phone, setPhone] = useState('')
+  const [shopName, setShopName] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [agreed, setAgreed] = useState(false)
   const [error, setError] = useState('')
 
+  const clearErr = setter => e => { setter(e.target.value); setError('') }
+
   function submit() {
-    if (!name.trim()) { setError('Please enter your name.'); return }
-    if (!shopName.trim()) { setError('Please enter your shop name.'); return }
-    if (!phone.trim()) { setError('Please enter your phone number.'); return }
+    if (!name.trim()) { setError(t('laNameRequiredErr')); return }
+    if (!phone.trim()) { setError(t('laPhoneRequiredErr')); return }
+    if (!shopName.trim()) { setError(t('laShopNameRequiredErr')); return }
+    if (password.length < 4) { setError(t('laPasswordShortErr')); return }
+    if (password !== confirm) { setError(t('laPasswordMatchErr')); return }
+    if (!agreed) { setError(t('laAgreeRequiredErr')); return }
     setError('')
-    onDone({ name, shopName, phone })
+    onDone({
+      name: name.trim(),
+      shopName: shopName.trim(),
+      phone: `${dial} ${phone.trim()}`,
+      passwordHash: hashPin(password),
+    })
   }
 
   return (
-    <div className="la-auth-page">
-      <div className="la-auth-card">
-        <button className="la-back-btn" onClick={onBack}>← Back</button>
-        <div className="la-auth-logo"><Logo size={38} /><strong>Ulahia</strong></div>
-        <h2 className="la-auth-title">Create Your Account</h2>
-        <p className="la-auth-sub">Fill in your details below. You can change them later in Settings.</p>
+    <div className="la-login-page">
+      <div className="la-login-top">
+        <button className="la-back-btn" onClick={onBack}>← {t('laBackBtn')}</button>
+        <LangChip />
+      </div>
+
+      <div className="la-login-body">
+        <div className="la-login-brand">
+          <LogoLockup size={44} />
+        </div>
+
+        <h2 className="la-login-title">{t('laCreateAccountTitle')}</h2>
+        <p className="la-login-sub">{t('laCreateAccountSub')}</p>
+
         <div className="la-auth-form">
           <label className="label">
-            Your Full Name
-            <input className="field" placeholder="e.g. Ngozi Eze" value={name}
-              onChange={e => { setName(e.target.value); setError('') }} autoFocus />
+            {t('laFullNameLabel')}
+            <span className="la-input-group">
+              <span className="la-input-icon"><IconUser size={19} /></span>
+              <input
+                className="la-input"
+                placeholder={t('laFullNamePlaceholder')}
+                value={name}
+                autoComplete="name"
+                onChange={clearErr(setName)}
+                autoFocus
+              />
+            </span>
           </label>
+
+          <div className="label">
+            {t('laPhoneNumberLabel')}
+            <div className="la-phone-row">
+              <span className="la-input-group la-dial-box">
+                <DialCodePicker
+                  value={country}
+                  onChange={c => { setCountry(c.code); setDial(c.dial); setError('') }}
+                />
+                <span className="la-dial-caret" aria-hidden="true">▾</span>
+              </span>
+              <span className="la-input-group">
+                <span className="la-input-icon"><IconPhone size={19} /></span>
+                <input
+                  className="la-input"
+                  type="tel"
+                  placeholder="803 123 4567"
+                  value={phone}
+                  autoComplete="tel"
+                  onChange={clearErr(setPhone)}
+                />
+              </span>
+            </div>
+          </div>
+
           <label className="label">
-            Shop Name
-            <input className="field" placeholder="e.g. Mama Ngozi Store" value={shopName}
-              onChange={e => { setShopName(e.target.value); setError('') }} />
+            {t('shopName')}
+            <span className="la-input-group">
+              <span className="la-input-icon"><IconStore size={19} /></span>
+              <input
+                className="la-input"
+                placeholder={t('shopNamePlaceholderSettings')}
+                value={shopName}
+                onChange={clearErr(setShopName)}
+              />
+            </span>
           </label>
-          <label className="label">
-            Your Phone Number
-            <input className="field" type="tel" placeholder="e.g. 0803 000 0000" value={phone}
-              onChange={e => { setPhone(e.target.value); setError('') }} />
+
+          <PasswordField
+            label={t('laPasswordLabel')}
+            placeholder={t('laPasswordPlaceholder')}
+            value={password}
+            onChange={clearErr(setPassword)}
+          />
+
+          <PasswordField
+            label={t('laConfirmPasswordLabel')}
+            placeholder={t('laConfirmPasswordPlaceholder')}
+            value={confirm}
+            onChange={clearErr(setConfirm)}
+          />
+
+          <label className="la-agree-check">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={e => { setAgreed(e.target.checked); setError('') }}
+            />
+            <span>
+              {t('laAgreeCheckPrefix')}{' '}
+              <a href="/terms.html" target="_blank" rel="noopener">{t('laTermsOfService')}</a>{' '}
+              {t('laAndWord')}{' '}
+              <a href="/privacy.html" target="_blank" rel="noopener">{t('laPrivacyLink')}</a>
+            </span>
           </label>
+
           {error && <p className="la-error">{error}</p>}
-          <button className="button" style={{ width: '100%', minHeight: 58, fontSize: '1.1rem' }} onClick={submit}>
-            Next →
+
+          <button
+            className="button la-primary-btn"
+            disabled={!agreed}
+            style={{ opacity: agreed ? 1 : 0.45 }}
+            onClick={submit}
+          >
+            {t('laCreateAccountBtn')} →
           </button>
+
+          <p className="la-switch-line">
+            {t('laHaveAccountQ')} <button className="la-text-link la-text-link--inline" onClick={onLogin}>{t('laLoginLink')}</button>
+          </p>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Choose Language — approved mockup: radio list, switches the app live.
+// ─────────────────────────────────────────────────────────────────────────────
+const LANG_OPTIONS = [
+  { value: 'en',     name: 'English',         native: 'English',      tone: 'teal',   globe: true },
+  { value: 'pidgin', name: 'Nigerian Pidgin',  native: 'Naija Pidgin', tone: 'purple' },
+  { value: 'yo',     name: 'Yorùbá',           native: 'Yorùbá',       tone: 'orange' },
+  { value: 'ig',     name: 'Igbo',             native: 'Igbo',         tone: 'green' },
+  { value: 'ha',     name: 'Hausa',            native: 'Hausa',        tone: 'blue' },
+]
+
+function LanguageSelect({ onDone }) {
+  const { state, dispatch } = useStore()
+  const t = useLang()
+
+  return (
+    <div className="la-login-page">
+      <div className="la-login-body">
+        <div className="la-login-brand">
+          <LogoLockup size={44} />
+        </div>
+
+        <h2 className="la-login-title">{t('laChooseLangTitle')}</h2>
+        <p className="la-login-sub">{t('laChooseLangSub')}</p>
+
+        <div className="la-lang-list" role="radiogroup" aria-label={t('laChooseLangTitle')}>
+          {LANG_OPTIONS.map(({ value, name, native, tone, globe }) => {
+            const active = state.language === value
+            return (
+              <button
+                key={value}
+                role="radio"
+                aria-checked={active}
+                className={`la-lang-row${active ? ' is-active' : ''}`}
+                onClick={() => dispatch({ type: 'SET_LANGUAGE', payload: value })}
+              >
+                <span className={`la-lang-avatar la-lang-avatar--${tone}`}>
+                  {globe ? <IconGlobe size={22} /> : LANG_CODES[value]}
+                </span>
+                <span className="la-lang-text">
+                  <strong>{name}</strong>
+                  <span>{native}</span>
+                </span>
+                <span className={`la-radio${active ? ' is-checked' : ''}`} aria-hidden="true" />
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="la-info-card">
+          <span className="la-info-icon"><IconGlobe size={22} /></span>
+          <span>
+            <strong>{t('laMoreLangsTitle')}</strong><br />
+            {t('laMoreLangsSub')}
+          </span>
+        </div>
+
+        <button className="button la-primary-btn" onClick={onDone}>
+          {t('laContinueBtn')} →
+        </button>
       </div>
     </div>
   )
@@ -158,36 +332,37 @@ function SignupForm({ onBack, onDone }) {
 // Recovery code display
 // ─────────────────────────────────────────────────────────────────────────────
 function CodeDisplay({ code, onContinue }) {
+  const t = useLang()
   const [confirmed, setConfirmed] = useState(false)
 
   return (
     <div className="la-auth-page la-code-page">
       <div className="la-auth-card la-code-card">
         <div className="la-code-icon">✍️</div>
-        <h2 className="la-auth-title">Write Down Your Code!</h2>
+        <h2 className="la-auth-title">{t('laWriteDownTitle')}</h2>
         <p className="la-auth-sub">
-          This is your <strong>personal recovery code</strong>. You will need it if you ever switch phones or want to log in on another device.
+          {t('laCodeDescPrefix')} <strong>{t('laCodeDescBold')}</strong>{t('laCodeDescSuffix')}
         </p>
         <div className="la-code-display">
-          <span className="la-code-label">Your Recovery Code:</span>
+          <span className="la-code-label">{t('laYourCodeLabel')}</span>
           <div className="la-code-value">{code}</div>
         </div>
         <div className="la-code-tips">
-          <div className="la-code-tip">📝 Write it on paper right now</div>
-          <div className="la-code-tip">📸 Take a photo of this screen</div>
-          <div className="la-code-tip">💾 You can also find it later in Settings</div>
+          <div className="la-code-tip">📝 {t('laTip1')}</div>
+          <div className="la-code-tip">📸 {t('laTip2')}</div>
+          <div className="la-code-tip">💾 {t('laTip3')}</div>
         </div>
         <label className="la-confirm-check">
           <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />
-          <span>I have saved my recovery code</span>
+          <span>{t('laConfirmCheckLabel')}</span>
         </label>
         <button
-          className="button"
-          style={{ width: '100%', minHeight: 58, fontSize: '1.05rem', marginTop: 8, opacity: confirmed ? 1 : 0.4 }}
+          className="button la-primary-btn"
+          style={{ opacity: confirmed ? 1 : 0.4 }}
           disabled={!confirmed}
           onClick={onContinue}
         >
-          ✅ Let's Start — Show Me Around!
+          ✅ {t('laLetsStartBtn')}
         </button>
       </div>
     </div>
@@ -195,74 +370,196 @@ function CodeDisplay({ code, onContinue }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Login form
+// Login — password first (device credential), recovery code as the
+// cross-device fallback. "Forgot password?" switches to recovery mode.
 // ─────────────────────────────────────────────────────────────────────────────
-function LoginForm({ onBack }) {
-  const { dispatch } = useStore()
+function LoginForm({ onBack, onSignup }) {
+  const { state, dispatch } = useStore()
+  const t = useLang()
+  const [mode, setMode] = useState('password') // 'password' | 'code'
   const [phone, setPhone] = useState('')
+  const [country, setCountry] = useState('NG')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [code, setCode] = useState('')
+  const [showCode, setShowCode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function submit() {
+  const digits = s => String(s || '').replace(/\D/g, '')
+
+  function submitPassword() {
+    if (!phone.trim()) { setError(t('laPhoneRequiredErr')); return }
+    if (!password) { setError(t('laPasswordShortErr')); return }
+    const stored = state.auth?.passwordHash
+    const phoneMatches = digits(state.shop.phone).endsWith(digits(phone).slice(-10)) && digits(phone).length >= 7
+    if (state.setupDone && stored && phoneMatches && hashPin(password) === stored) {
+      sessionStorage.setItem('ulahia-unlocked', '1')
+      dispatch({ type: 'SET_VIEW', payload: 'home' })
+      return
+    }
+    setError(t('laWrongPasswordErr'))
+  }
+
+  async function submitCode() {
     const trimmed = code.trim().toUpperCase()
-    if (!phone.trim()) { setError('Please enter your phone number.'); return }
-    if (!trimmed || trimmed.length !== 6) { setError('Recovery code must be exactly 6 characters.'); return }
+    if (!phone.trim()) { setError(t('laPhoneRequiredErr')); return }
+    if (!trimmed || trimmed.length !== 6) { setError(t('laRecoveryLengthErr')); return }
     setError('')
     setLoading(true)
     try {
       const result = await pullByCode(trimmed)
       if (!result) {
-        setError('No account found with that code. Check the code and try again.')
+        setError(t('laNoAccountFoundErr'))
         setLoading(false)
         return
       }
       setCloudMeta({ profileId: result.profile_id, recoveryCode: trimmed })
+      sessionStorage.setItem('ulahia-unlocked', '1')
       dispatch({
         type: 'IMPORT_STATE',
-        payload: { ...result.state, setupDone: true, onboardingDone: true, view: 'home', cart: [] },
+        payload: { ...result.state, setupDone: true, onboardingDone: true, view: 'home' },
       })
     } catch {
-      setError('Could not connect. Check your internet and try again.')
+      setError(t('laCouldNotConnectErr'))
     }
     setLoading(false)
   }
 
+  const isCode = mode === 'code'
+
   return (
-    <div className="la-auth-page">
-      <div className="la-auth-card">
-        <button className="la-back-btn" onClick={onBack}>← Back</button>
-        <div className="la-auth-logo"><Logo size={38} /><strong>Ulahia</strong></div>
-        <h2 className="la-auth-title">Welcome Back! 👋</h2>
-        <p className="la-auth-sub">Enter your phone number and the recovery code you saved when you signed up.</p>
+    <div className="la-login-page">
+      <div className="la-login-top">
+        <button className="la-back-btn" onClick={onBack}>← {t('laBackBtn')}</button>
+        <LangChip />
+      </div>
+
+      <div className="la-login-body">
+        <div className="la-login-brand">
+          <LogoLockup size={56} stacked />
+        </div>
+
+        <h2 className="la-login-title">{t('laWelcomeBackTitle')}</h2>
+        <p className="la-login-sub">{t('laLoginSub')}</p>
+
         <div className="la-auth-form">
           <label className="label">
-            Your Phone Number
-            <input className="field" type="tel" placeholder="e.g. 0803 000 0000"
-              value={phone} onChange={e => { setPhone(e.target.value); setError('') }} autoFocus />
+            {t('laPhoneNumberLabel')}
+            <span className="la-input-group">
+              <span className="la-input-icon"><IconPhone size={19} /></span>
+              <DialCodePicker value={country} onChange={c => setCountry(c.code)} />
+              <input
+                className="la-input"
+                type="tel"
+                placeholder="803 123 4567"
+                value={phone}
+                onChange={e => { setPhone(e.target.value); setError('') }}
+                autoFocus
+              />
+              {phone && (
+                <button className="la-input-btn" aria-label="Clear" onClick={() => setPhone('')}>
+                  <IconX size={18} />
+                </button>
+              )}
+            </span>
           </label>
-          <label className="label">
-            Recovery Code
-            <input
-              className="field la-code-input"
-              placeholder="e.g. ABC123"
-              value={code}
-              maxLength={6}
-              onChange={e => { setCode(e.target.value.toUpperCase()); setError('') }}
-            />
-          </label>
-          {error && <p className="la-error">{error}</p>}
-          {!isSupabaseEnabled && (
-            <p className="la-note">⚠️ Cloud login requires internet. Make sure you are connected.</p>
+
+          {!isCode ? (
+            <>
+              <label className="label">
+                {t('laPasswordLabel')}
+                <span className="la-input-group">
+                  <span className="la-input-icon"><IconLock size={19} /></span>
+                  <input
+                    className="la-input"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={t('laPasswordLabel')}
+                    value={password}
+                    autoComplete="current-password"
+                    onChange={e => { setPassword(e.target.value); setError('') }}
+                  />
+                  <button
+                    className="la-input-btn"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword(s => !s)}
+                  >
+                    {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                  </button>
+                </span>
+              </label>
+              <p className="la-forgot-line">
+                <button className="la-text-link la-text-link--inline" onClick={() => { setMode('code'); setError('') }}>
+                  {t('laForgotPasswordQ')}
+                </button>
+              </p>
+            </>
+          ) : (
+            <>
+              <label className="label">
+                {t('laRecoveryCodeLabel')}
+                <span className="la-input-group">
+                  <span className="la-input-icon"><IconLock size={19} /></span>
+                  <input
+                    className="la-input la-code-input"
+                    type={showCode ? 'text' : 'password'}
+                    placeholder={t('laRecoveryCodePlaceholder')}
+                    value={code}
+                    maxLength={6}
+                    autoComplete="off"
+                    onChange={e => { setCode(e.target.value.toUpperCase()); setError('') }}
+                  />
+                  <button
+                    className="la-input-btn"
+                    aria-label={showCode ? 'Hide code' : 'Show code'}
+                    onClick={() => setShowCode(s => !s)}
+                  >
+                    {showCode ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                  </button>
+                </span>
+              </label>
+              <p className="la-forgot-line la-forgot-line--hint">{t('laRecoveryHint')}</p>
+            </>
           )}
+
+          {error && <p className="la-error">{error}</p>}
+          {isCode && !isSupabaseEnabled && (
+            <p className="la-note">⚠️ {t('laCloudLoginNote')}</p>
+          )}
+
           <button
-            className="button"
-            style={{ width: '100%', minHeight: 58, fontSize: '1.1rem' }}
-            onClick={submit}
+            className="button la-primary-btn"
+            onClick={isCode ? submitCode : submitPassword}
             disabled={loading}
           >
-            {loading ? '⏳ Loading your data...' : '→ Log In'}
+            {loading ? `⏳ ${t('laLoadingDataBtn')}` : t('laLogInBtn')}
           </button>
+
+          <div className="la-or-divider" aria-hidden="true">
+            <span />{t('laOrDivider')}<span />
+          </div>
+
+          <button className="la-ghost-btn" onClick={() => { setMode(isCode ? 'password' : 'code'); setError('') }}>
+            <IconShield size={18} /> {isCode ? t('laUsePasswordInstead') : t('laLoginWithCode')}
+          </button>
+
+          <p className="la-switch-line">
+            {t('laNoAccountQ')} <button className="la-text-link la-text-link--inline" onClick={onSignup}>{t('laSignUpLink')}</button>
+          </p>
+
+          <p className="la-secure-note">
+            <span className="la-secure-icon"><IconShield size={20} /></span>
+            <span>
+              {t('laSecureNote1')}<br />{t('laSecureNote2')}
+            </span>
+          </p>
+
+          <p className="la-legal-note">
+            {t('laAgreePrefix')}{' '}
+            <a href="/terms.html" target="_blank" rel="noopener">{t('laTermsLink')}</a>{' '}
+            {t('laAndWord')}{' '}
+            <a href="/privacy.html" target="_blank" rel="noopener">{t('laPrivacyLink')}</a>.
+          </p>
         </div>
       </div>
     </div>
@@ -270,38 +567,42 @@ function LoginForm({ onBack }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Root — decides starting phase based on localStorage
+// Root — Welcome → Sign up → Choose Language → Code, or Welcome → Log in
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingAuth() {
-  const { dispatch } = useStore()
-  // After the first visit, skip straight to the auth choice page
-  const [phase, setPhase] = useState(
-    localStorage.getItem(SEEN_KEY) ? 'auth' : 'intro'
-  )
-  const [pendingShop, setPendingShop] = useState(null)
+  const { dispatch, enterDemoTour } = useStore()
+  const [phase, setPhase] = useState('welcome')
+  const [pending, setPending] = useState(null)
   const [recoveryCode, setRecoveryCode] = useState('')
 
-  function finishIntro() {
+  function goSignup() {
     localStorage.setItem(SEEN_KEY, '1')
-    setPhase('auth')
+    setPhase('signup')
   }
 
-  function handleSignupDone({ name, shopName, phone }) {
+  function goLogin() {
+    localStorage.setItem(SEEN_KEY, '1')
+    setPhase('login')
+  }
+
+  function handleSignupDone({ name, shopName, phone, passwordHash }) {
     const meta = getOrCreateCloudMeta()
     setRecoveryCode(meta.recoveryCode)
-    setPendingShop({ name: shopName, owner: name, phone })
-    setPhase('code')
+    setPending({ shop: { name: shopName, owner: name, phone }, passwordHash })
+    setPhase('language')
   }
 
   function handleCodeConfirmed() {
-    dispatch({ type: 'COMPLETE_SETUP', payload: pendingShop })
+    // Fresh signup = already authenticated for this session
+    sessionStorage.setItem('ulahia-unlocked', '1')
+    dispatch({ type: 'COMPLETE_SETUP', payload: pending })
   }
 
-  if (phase === 'intro')  return <IntroSlides onDone={finishIntro} />
-  if (phase === 'auth')   return <AuthChoice onSignup={() => setPhase('signup')} onLogin={() => setPhase('login')} />
-  if (phase === 'signup') return <SignupForm onBack={() => setPhase('auth')} onDone={handleSignupDone} />
-  if (phase === 'code')   return <CodeDisplay code={recoveryCode} onContinue={handleCodeConfirmed} />
-  if (phase === 'login')  return <LoginForm onBack={() => setPhase('auth')} />
+  if (phase === 'welcome')  return <Welcome onSignup={goSignup} onLogin={goLogin} onDemo={enterDemoTour} />
+  if (phase === 'signup')   return <SignupForm onBack={() => setPhase('welcome')} onDone={handleSignupDone} onLogin={goLogin} />
+  if (phase === 'language') return <LanguageSelect onDone={() => setPhase('code')} />
+  if (phase === 'code')     return <CodeDisplay code={recoveryCode} onContinue={handleCodeConfirmed} />
+  if (phase === 'login')    return <LoginForm onBack={() => setPhase('welcome')} onSignup={goSignup} />
 
   return null
 }

@@ -21,7 +21,7 @@ export default function RestockModal({ product }) {
       type: 'RESTOCK_PRODUCT',
       payload: { productId: product.id, qty: num, amount: num },
     })
-    showToast(`${product.name} restocked!`)
+    showToast(t('restockedToast', { name: product.name }))
     closeModal()
   }
 
@@ -52,7 +52,7 @@ export default function RestockModal({ product }) {
           className="field"
           type="number"
           min="1"
-          placeholder={isFlexible ? 'e.g. 30000' : 'e.g. 50'}
+          placeholder={isFlexible ? t('restockPlaceholderFlex') : t('restockPlaceholderFixed')}
           value={value}
           onChange={e => setValue(e.target.value)}
           autoFocus
@@ -62,12 +62,12 @@ export default function RestockModal({ product }) {
 
       {isFlexible && value && Number(value) > 0 && (
         <div className="restock-preview">
-          New total investment: <strong>{money(product.invested + Number(value))}</strong>
+          {t('newTotalInvestmentLabel')} <strong>{money(product.invested + Number(value))}</strong>
         </div>
       )}
       {!isFlexible && value && Number(value) > 0 && (
         <div className="restock-preview">
-          New stock level: <strong>{product.qty + Number(value)} units</strong>
+          {t('newStockLevelLabel')} <strong>{product.qty + Number(value)} {t('units')}</strong>
         </div>
       )}
 

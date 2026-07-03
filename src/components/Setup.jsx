@@ -34,7 +34,7 @@ export default function Setup() {
 
   async function handleRestore() {
     if (restoreCode.trim().length !== 6) {
-      setRestoreError('Enter your 6-character code.')
+      setRestoreError(t('enterSixCharCode'))
       return
     }
     setRestoreLoading(true)
@@ -42,7 +42,7 @@ export default function Setup() {
     const result = await pullByCode(restoreCode)
     setRestoreLoading(false)
     if (!result) {
-      setRestoreError('Code not found. Double-check and try again.')
+      setRestoreError(t('codeNotFound'))
       return
     }
     setCloudMeta({ profileId: result.profile_id, recoveryCode: restoreCode.toUpperCase().trim() })
@@ -59,11 +59,9 @@ export default function Setup() {
             <div><strong>Ulahia</strong><span>{t('tagline')}</span></div>
           </div>
 
-          <h1 className="setup-title" style={{ marginBottom: 8 }}>Your Backup Code</h1>
+          <h1 className="setup-title" style={{ marginBottom: 8 }}>{t('yourBackupCodeTitle')}</h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.92rem', margin: '0 0 20px', lineHeight: 1.55 }}>
-            {isSupabaseEnabled
-              ? 'Your data syncs to the cloud automatically. If you ever lose your phone or switch devices, enter this code to get everything back.'
-              : 'Write this code down somewhere safe. You can use it to restore your data on another device.'}
+            {isSupabaseEnabled ? t('cloudSyncDesc') : t('writeDownSafeDesc')}
           </p>
 
           <div style={{
@@ -81,11 +79,11 @@ export default function Setup() {
             {recoveryCode}
           </div>
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.8rem', margin: '0 0 24px' }}>
-            You can also find this code anytime in Settings → Cloud Backup.
+            {t('findCodeSettingsHint')}
           </p>
 
           <button className="button setup-submit" onClick={confirm}>
-            Got it — Start selling →
+            {t('gotItStartSelling')}
           </button>
         </div>
       </div>
@@ -102,16 +100,16 @@ export default function Setup() {
             <div><strong>Ulahia</strong><span>{t('tagline')}</span></div>
           </div>
 
-          <h1 className="setup-title" style={{ marginBottom: 8 }}>Restore Your Data</h1>
+          <h1 className="setup-title" style={{ marginBottom: 8 }}>{t('restoreYourDataTitle')}</h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.92rem', margin: '0 0 20px', lineHeight: 1.55 }}>
-            Enter the 6-character backup code from your old device to restore all your products, sales, and customer records.
+            {t('restoreDataDesc')}
           </p>
 
           <label className="label" style={{ marginBottom: 16 }}>
-            Backup code
+            {t('backupCodeLabel')}
             <input
               className="field"
-              placeholder="e.g. NGOZI7"
+              placeholder={t('backupCodePlaceholder')}
               value={restoreCode}
               onChange={e => { setRestoreCode(e.target.value.toUpperCase()); setRestoreError('') }}
               maxLength={6}
@@ -127,7 +125,7 @@ export default function Setup() {
           )}
 
           <button className="button setup-submit" onClick={handleRestore} disabled={restoreLoading}>
-            {restoreLoading ? 'Restoring…' : 'Restore my data →'}
+            {restoreLoading ? t('restoringBtn') : t('restoreMyDataBtn')}
           </button>
 
           <button
@@ -135,7 +133,7 @@ export default function Setup() {
             style={{ marginTop: 12, width: '100%' }}
             onClick={() => { setStep('form'); setRestoreError(''); setRestoreCode('') }}
           >
-            ← Back to setup
+            {t('backToSetupBtn')}
           </button>
         </div>
       </div>
@@ -170,24 +168,24 @@ export default function Setup() {
           </div>
         </div>
 
-        <h1 className="setup-title">Set up your shop</h1>
-        <p className="setup-sub">Enter your details to get started. You can change them anytime.</p>
+        <h1 className="setup-title">{t('setupShopTitle')}</h1>
+        <p className="setup-sub">{t('setupShopSub')}</p>
 
         <form onSubmit={handleSubmit} className="setup-form">
           <label className="label">
-            Shop name
-            <input className="field" name="shop" placeholder="e.g. Mama Grace Store" autoFocus required />
+            {t('setupShopNameLabel')}
+            <input className="field" name="shop" placeholder={t('shopNamePlaceholderSetup')} autoFocus required />
           </label>
           <label className="label">
-            Your name
-            <input className="field" name="owner" placeholder="e.g. Grace" required />
+            {t('setupYourNameLabel')}
+            <input className="field" name="owner" placeholder={t('ownerPlaceholderSetup')} required />
           </label>
           <label className="label">
-            Phone <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span>
-            <input className="field" name="phone" placeholder="0803 xxx xxxx" />
+            {t('phoneShortLabel')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>({t('optional')})</span>
+            <input className="field" name="phone" placeholder={t('phonePlaceholder')} />
           </label>
           <button className="button setup-submit" type="submit">
-            Start selling →
+            {t('startSellingBtn')}
           </button>
         </form>
 
@@ -196,7 +194,7 @@ export default function Setup() {
             style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.88rem', cursor: 'pointer', marginTop: 16, textDecoration: 'underline', padding: 0 }}
             onClick={() => setStep('restore')}
           >
-            Already use Ulahia? Restore from backup code →
+            {t('alreadyUseRestoreLink')}
           </button>
         )}
       </div>

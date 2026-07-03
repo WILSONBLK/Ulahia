@@ -1,3 +1,8 @@
+// Single source of truth for "has this user ever seen/skipped the guided tour" —
+// shared by store.jsx (demo entry) and Onboarding.jsx (tour itself) so the tour
+// never re-triggers in one place after being dismissed in the other.
+export const TOUR_SEEN_KEY = 'ulahia-ob-done'
+
 // FNV-1a — deterministic, synchronous, good enough for local-only PIN storage
 export function hashPin(pin) {
   let h = 0x811c9dc5
@@ -11,6 +16,23 @@ export function hashPin(pin) {
 
 export function money(value) {
   return 'NGN ' + Number(value || 0).toLocaleString('en-NG')
+}
+
+export function filterByPeriod(records, period, dateField = 'time') {
+  const now = new Date()
+  if (period === 'today') {
+    const today = now.toDateString()
+    return records.filter(r => new Date(r[dateField]).toDateString() === today)
+  }
+  if (period === 'week') {
+    const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000)
+    return records.filter(r => new Date(r[dateField]) >= cutoff)
+  }
+  if (period === 'month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+    return records.filter(r => new Date(r[dateField]) >= start)
+  }
+  return records
 }
 
 export function speak(text) {

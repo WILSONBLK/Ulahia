@@ -1,21 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store.jsx'
+import { TOUR_SEEN_KEY } from '../utils.js'
+import { useLang } from '../useLang.js'
 
 const OB_STEP_KEY = 'ulahia-ob-step'
-const OB_DONE_KEY = 'ulahia-ob-done'
-
-const LANGS = [
-  { code: 'en',     label: 'English', flag: '🇬🇧' },
-  { code: 'pidgin', label: 'Pidgin',  flag: '🇳🇬' },
-  { code: 'yo',     label: 'Yoruba',  flag: '🌿' },
-  { code: 'ig',     label: 'Igbo',    flag: '🌿' },
-  { code: 'ha',     label: 'Hausa',   flag: '🌿' },
-]
+const OB_DONE_KEY = TOUR_SEEN_KEY
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step definitions
 //
-//  type 'language' – language-picker slide (step 0 only)
 //  type 'card'     – full-screen coloured slide, no spotlight
 //  type 'spot'     – spotlight on target + tooltip + "Next" button
 //                    auto-navigates to `view` when step loads
@@ -23,18 +16,17 @@ const LANGS = [
 //                    user taps the highlighted element to advance (and navigate)
 //                    optional `view` auto-navigates first so target is visible
 // ─────────────────────────────────────────────────────────────────────────────
+// Language is chosen during account creation (LandingAuth), so the tour
+// starts straight at the welcome card in the user's language.
 const STEPS = [
-  // 0 — Language choice (always first)
-  { type: 'language' },
-
-  // 1 — Welcome card
+  // 0 — Welcome card
   {
     type: 'card',
-    color: '#087f5b',
+    color: '#0F6B63',
     icon: '👋',
-    title: 'Welcome to Ulahia!',
-    body: "Let me walk you through every button and screen, one at a time.\n\nThis takes about 2 minutes. After that you will know exactly how to use the app.",
-    btn: 'Show Me Around →',
+    titleKey: 'ob1WelcomeTitle',
+    bodyKey: 'ob1WelcomeBody',
+    btnKey: 'ob1WelcomeBtn',
   },
 
   // 2 — Home: Today's summary (auto-nav to home)
@@ -43,8 +35,8 @@ const STEPS = [
     view: 'home',
     target: '.home-today',
     icon: '📋',
-    title: "Today's Summary",
-    body: "This bar shows your total sales and profit for today.\n\nTap anywhere on it to see a full report — cash received, bank transfers, and how much was given on credit.",
+    titleKey: 'ob2TodaySummaryTitle',
+    bodyKey: 'ob2TodaySummaryBody',
   },
 
   // 3 — Home: 4 navigation tiles
@@ -53,8 +45,8 @@ const STEPS = [
     view: 'home',
     target: '.home-grid',
     icon: '🗂️',
-    title: '4 Quick Tiles',
-    body: "These 4 boxes are shortcuts:\n\n👥 Customers — who bought from you\n📋 Debts — who owes you money\n📦 Products — your goods and stock\n📊 Reports — your profit history\n\nTap any tile to go straight there.",
+    titleKey: 'ob3QuickTilesTitle',
+    bodyKey: 'ob3QuickTilesBody',
   },
 
   // 4 — Home: Settings row
@@ -63,8 +55,8 @@ const STEPS = [
     view: 'home',
     target: '.home-settings-row',
     icon: '⚙️',
-    title: 'Settings Button',
-    body: "Tap here to open Settings.\n\nYou can change your shop name, set a PIN to protect your data, find your Recovery Code, or download a backup of all your records.",
+    titleKey: 'ob4SettingsTitle',
+    bodyKey: 'ob4SettingsBody',
   },
 
   // 5 — Home: Header — language + theme buttons
@@ -73,8 +65,8 @@ const STEPS = [
     view: 'home',
     target: '.home-header',
     icon: '🌍',
-    title: 'Language & Display',
-    body: "The top bar has two useful controls:\n\n🌍 Language — tap the dropdown to switch between English, Pidgin, Yoruba, Igbo, Hausa.\n\n🔆 High Contrast & 🌙 Dark Mode buttons — tap them to make the screen easier to read.",
+    titleKey: 'ob5LangDisplayTitle',
+    bodyKey: 'ob5LangDisplayBody',
   },
 
   // 6 — TAP: Sell button → user taps it to go to sell screen
@@ -84,8 +76,8 @@ const STEPS = [
     target: '.home-sell-btn',
     tapView: 'sell',
     icon: '💰',
-    title: 'The Sell Button',
-    body: "Tap this when a customer is actively buying from you.\n\nYou gather their order, add the items one by one, then complete the sale. Think of it as your cashier screen.\n\n👆 Tap the button above to go to the Sell screen!",
+    titleKey: 'ob6SellBtnTitle',
+    bodyKey: 'ob6SellBtnBody',
   },
 
   // 7 — Sell: Search bar
@@ -94,8 +86,8 @@ const STEPS = [
     view: 'sell',
     target: '.pos-search',
     icon: '🔍',
-    title: 'Search for a Product',
-    body: "Type a product name here and the list filters immediately.\n\nFor example, type 'rice' and only rice products show. Very useful when you have many different goods.",
+    titleKey: 'ob7SearchTitle',
+    bodyKey: 'ob7SearchBody',
   },
 
   // 8 — Sell: Product rows
@@ -105,8 +97,8 @@ const STEPS = [
     target: '.pos-product-row',
     fallback: true,
     icon: '📦',
-    title: 'Product Rows',
-    body: "Each row shows one product.\n\n• Tap '+ Add' to add it to your cart\n• Tap '−' and '+' to adjust quantity\n• Tap the number itself to type an exact amount\n• The green +₦ number shows your profit per unit",
+    titleKey: 'ob8ProductRowsTitle',
+    bodyKey: 'ob8ProductRowsBody',
   },
 
   // 9 — Sell: Pin button
@@ -116,8 +108,8 @@ const STEPS = [
     target: '.pos-pin-btn',
     fallback: true,
     icon: '⭐',
-    title: 'Pin Your Best Sellers',
-    body: "See the ☆ star on the left of each product?\n\nTap it to PIN that product to the top of the list. Pin your most-sold items so you reach them instantly — no scrolling needed.",
+    titleKey: 'ob9PinTitle',
+    bodyKey: 'ob9PinBody',
   },
 
   // 10 — Card: Payment methods
@@ -125,9 +117,9 @@ const STEPS = [
     type: 'card',
     color: '#1864ab',
     icon: '💳',
-    title: 'How Did They Pay?',
-    body: "When you tap SELL, a checkout window opens. You choose how the customer paid:\n\n💵 Cash — they paid with cash\n📲 Transfer — they sent to your bank\n📋 Credit — they will pay later (goes into Debts)\n\nYou can also split: part cash, part credit.",
-    btn: 'Got it! Continue →',
+    titleKey: 'ob10PaymentTitle',
+    bodyKey: 'ob10PaymentBody',
+    btnKey: 'ob10PaymentBtn',
   },
 
   // 11 — Card: Discounts and receipts
@@ -135,9 +127,9 @@ const STEPS = [
     type: 'card',
     color: '#6741d9',
     icon: '🏷️',
-    title: 'Discounts & Receipts',
-    body: "In the checkout window there is a Discount section:\n\n• % Off — reduce by a percentage (e.g. 10% off)\n• ₦ Off — remove a fixed amount (e.g. ₦500 off)\n\nAfter every sale a receipt appears automatically. Send it to the customer on WhatsApp or download it as an image.",
-    btn: 'Got it! Continue →',
+    titleKey: 'ob11DiscountsTitle',
+    bodyKey: 'ob11DiscountsBody',
+    btnKey: 'ob11DiscountsBtn',
   },
 
   // 12 — TAP: Products tab in bottom nav
@@ -146,8 +138,8 @@ const STEPS = [
     target: '.tabs-mobile button:nth-child(3)',
     tapView: 'products',
     icon: '📦',
-    title: 'Go to Products',
-    body: "Now let's explore your Products screen.\n\n👇 Tap the 📦 Products button in the bottom bar!",
+    titleKey: 'ob12GoProductsTitle',
+    bodyKey: 'ob12GoProductsBody',
   },
 
   // 13 — Products: Add button
@@ -156,8 +148,8 @@ const STEPS = [
     view: 'products',
     target: '.screen-top-actions .button',
     icon: '➕',
-    title: 'Add Product Button',
-    body: "Tap here to add a new product.\n\nYou fill in:\n• Product name\n• Selling price (what you charge)\n• Cost price (what you paid)\n• Stock quantity\n• Low-stock alert level",
+    titleKey: 'ob13AddProductTitle',
+    bodyKey: 'ob13AddProductBody',
   },
 
   // 14 — Products: Stock bar
@@ -167,8 +159,8 @@ const STEPS = [
     target: '.prod-bar-wrap',
     fallback: true,
     icon: '📊',
-    title: 'Stock Level Bars',
-    body: "The coloured bar under each product shows stock level:\n\n🟢 Green — you have plenty\n🟡 Yellow — running low, restock soon!\n🔴 Red — out of stock\n\nWhen stock goes low, a warning banner also shows on your Home screen.",
+    titleKey: 'ob14StockBarsTitle',
+    bodyKey: 'ob14StockBarsBody',
   },
 
   // 15 — TAP: Customers tab in bottom nav
@@ -177,8 +169,8 @@ const STEPS = [
     target: '.tabs-mobile button:nth-child(4)',
     tapView: 'customers',
     icon: '👥',
-    title: 'Go to Customers',
-    body: "Now let's see who owes you money.\n\n👇 Tap the 👥 Customers button in the bottom bar!",
+    titleKey: 'ob15GoCustomersTitle',
+    bodyKey: 'ob15GoCustomersBody',
   },
 
   // 16 — Customers: Cards
@@ -188,8 +180,8 @@ const STEPS = [
     target: '.cust-card',
     fallback: true,
     icon: '👥',
-    title: 'Customer Cards',
-    body: "Anyone who buys on Credit appears here automatically.\n\nEach card shows:\n• Name and amount owed\n• 'Paid' button — when they pay you back\n• 💬 WhatsApp button — sends an automatic reminder:\n\n'Hello [Name], you owe ₦[amount]. Kindly pay when you can.'",
+    titleKey: 'ob16CustomerCardsTitle',
+    bodyKey: 'ob16CustomerCardsBody',
   },
 
   // 17 — TAP: Reports tab in bottom nav
@@ -198,8 +190,8 @@ const STEPS = [
     target: '.tabs-mobile button:nth-child(5)',
     tapView: 'reports',
     icon: '📊',
-    title: 'Go to Reports',
-    body: "See your full profit history here.\n\n👇 Tap the 📊 Reports button in the bottom bar!",
+    titleKey: 'ob17GoReportsTitle',
+    bodyKey: 'ob17GoReportsBody',
   },
 
   // 18 — Reports: Period tabs
@@ -208,8 +200,8 @@ const STEPS = [
     view: 'reports',
     target: '.report-periods',
     icon: '📊',
-    title: 'Report Period Buttons',
-    body: "Tap these to change the time period:\n\n• Today — just today\n• This Week — last 7 days\n• This Month — the whole month\n• All Time — your complete history\n\nBelow you see totals, cash vs transfer vs credit, and your best-selling products.",
+    titleKey: 'ob18ReportPeriodsTitle',
+    bodyKey: 'ob18ReportPeriodsBody',
   },
 
   // 19 — TAP: Settings tab in bottom nav
@@ -218,8 +210,8 @@ const STEPS = [
     target: '.tabs-mobile button:nth-child(6)',
     tapView: 'settings',
     icon: '⚙️',
-    title: 'Go to Settings',
-    body: "Last stop — Settings!\n\n👇 Tap the ⚙️ Settings button in the bottom bar!",
+    titleKey: 'ob19GoSettingsTitle',
+    bodyKey: 'ob19GoSettingsBody',
   },
 
   // 20 — Settings: Recovery code
@@ -229,8 +221,8 @@ const STEPS = [
     target: '[data-tour="cloud-section"]',
     fallback: true,
     icon: '🔑',
-    title: 'Your Recovery Code',
-    body: "Scroll down in Settings to find Cloud Backup. Your Recovery Code is shown there — a 6-letter code like 'AB3X9Z'.\n\n⚠️ WRITE IT DOWN or take a photo of it right now.\n\nIf you ever get a new phone, your phone number + this code is how you get ALL your data back.",
+    titleKey: 'ob20RecoveryCodeTitle',
+    bodyKey: 'ob20RecoveryCodeBody',
   },
 
   // 21 — Card: Going back
@@ -238,19 +230,19 @@ const STEPS = [
     type: 'card',
     color: '#37474F',
     icon: '←',
-    title: 'How to Go Back',
-    body: "Whenever you open a form or detail page — like editing a product or viewing a customer — you will see a ← Back button at the top left of the screen.\n\nTap it to return without saving.\n\nOr tap 🏠 Home at the bottom to jump straight to your Home screen.",
-    btn: 'Almost done! →',
+    titleKey: 'ob21GoBackTitle',
+    bodyKey: 'ob21GoBackBody',
+    btnKey: 'ob21GoBackBtn',
   },
 
   // 22 — Done
   {
     type: 'card',
-    color: '#087f5b',
+    color: '#0F6B63',
     icon: '🎉',
-    title: "You're Ready!",
-    body: "You now know every button in Ulahia!\n\nTo get started:\n1️⃣ Tap Products → '+ Add Product'\n2️⃣ Add your goods with prices and stock\n3️⃣ Tap Sell when a customer buys\n\nUlahia tracks everything from there. Good luck! 🚀",
-    btn: '🚀 Start Using Ulahia!',
+    titleKey: 'ob22DoneTitle',
+    bodyKey: 'ob22DoneBody',
+    btnKey: 'ob22DoneBtn',
     isLast: true,
   },
 ]
@@ -329,51 +321,19 @@ function fallbackTipStyle(tipW) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Language picker slide
-// ─────────────────────────────────────────────────────────────────────────────
-function LanguageStep({ stepNum, total, onNext }) {
-  const { state, dispatch } = useStore()
-  return (
-    <div className="ob-card" style={{ '--ob-color': '#087f5b' }}>
-      <div className="ob-lang-wrap">
-        <span className="ob-counter ob-counter--card">{stepNum + 1} / {total}</span>
-        <div className="ob-card-icon">🌍</div>
-        <h2 className="ob-card-title">Choose Your Language</h2>
-        <p className="ob-lang-sub">Pick the language you are most comfortable with. You can change it any time.</p>
-        <div className="ob-lang-list">
-          {LANGS.map(l => (
-            <button
-              key={l.code}
-              className={`ob-lang-btn${state.language === l.code ? ' ob-lang-btn--active' : ''}`}
-              onClick={() => dispatch({ type: 'SET_LANGUAGE', payload: l.code })}
-            >
-              <span className="ob-lang-flag">{l.flag}</span>
-              <span className="ob-lang-name">{l.label}</span>
-              {state.language === l.code && <span className="ob-lang-check">✓</span>}
-            </button>
-          ))}
-        </div>
-        <button className="ob-card-btn" onClick={onNext}>
-          Continue →
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Full-screen card slide
 // ─────────────────────────────────────────────────────────────────────────────
 function CardStep({ step, stepNum, total, onNext, btnOverride }) {
+  const t = useLang()
   return (
     <div className="ob-card" style={{ '--ob-color': step.color }}>
       <div className="ob-card-inner">
         <span className="ob-counter ob-counter--card">{stepNum + 1} / {total}</span>
         <div className="ob-card-icon">{step.icon}</div>
-        <h2 className="ob-card-title">{step.title}</h2>
-        <p className="ob-card-body">{step.body}</p>
+        <h2 className="ob-card-title">{t(step.titleKey)}</h2>
+        <p className="ob-card-body">{t(step.bodyKey)}</p>
         <button className="ob-card-btn" onClick={onNext}>
-          {btnOverride || step.btn || 'Next →'}
+          {btnOverride || (step.btnKey ? t(step.btnKey) : t('obNextBtn'))}
         </button>
       </div>
     </div>
@@ -384,6 +344,7 @@ function CardStep({ step, stepNum, total, onNext, btnOverride }) {
 // Tooltip inner content (shared between spot and tap steps)
 // ─────────────────────────────────────────────────────────────────────────────
 function TooltipContent({ step, stepNum, total, btnLabel, onBtn, arrowDir, arrowLeft }) {
+  const t = useLang()
   return (
     <>
       {arrowDir && (
@@ -392,8 +353,8 @@ function TooltipContent({ step, stepNum, total, btnLabel, onBtn, arrowDir, arrow
       <div className="ob-tip-scroll">
         <span className="ob-counter">{stepNum + 1} / {total}</span>
         <div className="ob-tip-icon">{step.icon}</div>
-        <h3 className="ob-tip-title">{step.title}</h3>
-        <p className="ob-tip-body">{step.body}</p>
+        <h3 className="ob-tip-title">{t(step.titleKey)}</h3>
+        <p className="ob-tip-body">{t(step.bodyKey)}</p>
       </div>
       <button className="ob-tip-next" onClick={onBtn}>{btnLabel}</button>
     </>
@@ -404,6 +365,7 @@ function TooltipContent({ step, stepNum, total, btnLabel, onBtn, arrowDir, arrow
 // Spot step — dimmed backdrop + tooltip with arrow + "Got it! Next →"
 // ─────────────────────────────────────────────────────────────────────────────
 function SpotStep({ step, stepNum, total, onNext }) {
+  const t = useLang()
   const tipW = Math.min(320, window.innerWidth - PAD * 2)
   const result = useTargetRect(step.target)
 
@@ -431,7 +393,7 @@ function SpotStep({ step, stepNum, total, onNext }) {
       <div className="ob-tooltip" style={tipStyle}>
         <TooltipContent
           step={step} stepNum={stepNum} total={total}
-          btnLabel="Got it! Next →"
+          btnLabel={t('obGotItNextBtn')}
           onBtn={onNext}
           arrowDir={arrowDir} arrowLeft={arrowLeft}
         />
@@ -446,6 +408,7 @@ function SpotStep({ step, stepNum, total, onNext }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function TapStep({ step, stepNum, total, onNext }) {
   const { dispatch } = useStore()
+  const t = useLang()
   const tipW = Math.min(320, window.innerWidth - PAD * 2)
   const result = useTargetRect(step.target)
 
@@ -471,15 +434,16 @@ function TapStep({ step, stepNum, total, onNext }) {
 
   return (
     <>
-      {/* Shade everything then let the capture div punch the spotlight hole */}
-      <div className="ob-shade" />
+      {/* When target found, ob-tap-capture's box-shadow darkens outside the highlight.
+          Only fall back to the plain shade when target can't be located. */}
+      {!result.found && <div className="ob-shade" />}
       {result.found && (
         <div className="ob-tap-capture" style={captureStyle} onClick={handleTap} />
       )}
       <div className="ob-tooltip" style={tipStyle}>
         <TooltipContent
           step={step} stepNum={stepNum} total={total}
-          btnLabel={result.found ? '👆 Tap it to continue' : 'Next →'}
+          btnLabel={result.found ? t('obTapItBtn') : t('obNextBtn')}
           onBtn={handleTap}
           arrowDir={arrowDir} arrowLeft={arrowLeft}
         />
@@ -493,6 +457,7 @@ function TapStep({ step, stepNum, total, onNext }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const { dispatch, activeProfile, switchProfile } = useStore()
+  const t = useLang()
 
   const [idx, setIdx] = useState(() => {
     const s = parseInt(localStorage.getItem(OB_STEP_KEY) || '0', 10)
@@ -515,19 +480,16 @@ export default function Onboarding() {
   }, [idx]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function done(skipped = false) {
+    // Skipping or finishing either counts as "seen" — the tour never shows
+    // again after this, in demo or in the user's real shop.
     localStorage.removeItem(OB_STEP_KEY)
-    if (activeProfile === 'demo') {
-      if (skipped) {
-        // Skip → go straight back to main account
-        switchProfile('main')
-      } else {
-        // Tour completed → hand off to DemoPractice for the practice sale
-        dispatch({ type: 'COMPLETE_ONBOARDING' })
-      }
-    } else {
-      localStorage.setItem(OB_DONE_KEY, '1')
-      dispatch({ type: 'COMPLETE_ONBOARDING' })
+    localStorage.setItem(OB_DONE_KEY, '1')
+    dispatch({ type: 'COMPLETE_ONBOARDING' })
+    if (activeProfile === 'demo' && skipped) {
+      // Skip in demo → go straight back to main account
+      switchProfile('main')
     }
+    // Completing the demo tour (not skipped) hands off to DemoPractice for the practice sale
   }
 
   function next() {
@@ -539,17 +501,16 @@ export default function Onboarding() {
 
   return (
     <>
+      {/* Blocks all app interactions during the tour; only tour UI sits above this */}
+      <div className="ob-blocker" />
       {!step.isLast && (
-        <button className="ob-skip-btn" onClick={() => done(true)}>Skip tour</button>
+        <button className="ob-skip-btn" onClick={() => done(true)}>{t('obSkipTourBtn')}</button>
       )}
 
-      {step.type === 'language' && (
-        <LanguageStep stepNum={idx} total={total} onNext={next} />
-      )}
       {step.type === 'card' && (
         <CardStep
           step={step} stepNum={idx} total={total} onNext={next}
-          btnOverride={step.isLast && activeProfile === 'demo' ? '💰 Try a Practice Sale! →' : null}
+          btnOverride={step.isLast && activeProfile === 'demo' ? t('obTryPracticeSaleBtn') : null}
         />
       )}
       {step.type === 'spot' && (

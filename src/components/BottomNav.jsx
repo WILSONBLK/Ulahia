@@ -1,36 +1,49 @@
 import { useStore } from '../store.jsx'
 import { useStats } from '../useStats.js'
+import { useLang } from '../useLang.js'
+import { IconHome, IconCart, IconBox, IconUsers, IconMore } from './icons.jsx'
+
+// Views that live under the "More" tab
+const MORE_VIEWS = ['more', 'reports', 'expenses', 'settings', 'help']
 
 const TABS = [
-  { view: 'home',      icon: '🏠', label: 'Home' },
-  { view: 'sell',      icon: '💰', label: 'Sell' },
-  { view: 'products',  icon: '📦', label: 'Products' },
-  { view: 'customers', icon: '👥', label: 'Customers' },
-  { view: 'reports',   icon: '📊', label: 'Reports' },
-  { view: 'settings',  icon: '⚙️', label: 'Settings' },
+  { view: 'home',      Icon: IconHome,  key: 'dashboard' },
+  { view: 'products',  Icon: IconBox,   key: 'navProducts' },
+  { view: 'sell',      Icon: IconCart,  key: 'sell', center: true },
+  { view: 'customers', Icon: IconUsers, key: 'navCustomers' },
+  { view: 'more',      Icon: IconMore,  key: 'navMore' },
 ]
 
 export default function BottomNav() {
   const { state, dispatch } = useStore()
   const { cartCount } = useStats()
+  const t = useLang()
 
-  const active = state.view === 'debts' ? 'customers' : state.view
+  const active =
+    state.view === 'debts' ? 'customers' :
+    state.view === 'bulk-restock' ? 'products' :
+    MORE_VIEWS.includes(state.view) ? 'more' :
+    state.view
 
   return (
     <nav className="tabs-mobile">
-      {TABS.map(tab => (
+      {TABS.map(({ view, Icon, key, center }) => (
         <button
-          key={tab.view}
-          className={active === tab.view ? 'is-active' : ''}
-          onClick={() => dispatch({ type: 'SET_VIEW', payload: tab.view })}
+          key={view}
+          className={[
+            center ? 'nav-sell' : '',
+            active === view ? 'is-active' : '',
+          ].filter(Boolean).join(' ')}
+          onClick={() => dispatch({ type: 'SET_VIEW', payload: view })}
+          aria-label={t(key)}
         >
           <span className="nav-icon-wrap">
-            <span className="nav-icon">{tab.icon}</span>
-            {tab.view === 'sell' && cartCount > 0 && (
+            <Icon size={center ? 26 : 22} />
+            {view === 'sell' && cartCount > 0 && (
               <span className="cart-badge">{cartCount}</span>
             )}
           </span>
-          <span className="nav-label">{tab.label}</span>
+          <span className="nav-label">{t(key)}</span>
         </button>
       ))}
     </nav>

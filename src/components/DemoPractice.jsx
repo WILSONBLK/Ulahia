@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store.jsx'
+import { useLang } from '../useLang.js'
 
 // ── Spotlight helpers (mirrors Onboarding geometry) ──────────────────────────
 const PAD = 14
@@ -45,7 +46,7 @@ function computePos(rect, tipW) {
 }
 
 // ── Confetti data (generated once at module load) ────────────────────────────
-const COLORS = ['#087f5b', '#1864ab', '#e67700', '#c92a2a', '#862e9c', '#ffd43b', '#2f9e44', '#f06595']
+const COLORS = ['#0F6B63', '#1864ab', '#e67700', '#c92a2a', '#862e9c', '#ffd43b', '#2f9e44', '#f06595']
 const CONFETTI = Array.from({ length: 32 }, (_, i) => ({
   id: i,
   color: COLORS[i % COLORS.length],
@@ -58,23 +59,18 @@ const CONFETTI = Array.from({ length: 32 }, (_, i) => ({
 
 // ── Step 0 — Intro card ──────────────────────────────────────────────────────
 function PracticeIntroCard({ onStart, onSkip }) {
+  const t = useLang()
   return (
     <div className="ob-card" style={{ '--ob-color': '#e67700' }}>
       <div className="ob-card-inner">
         <div className="ob-card-icon">🛍️</div>
-        <h2 className="ob-card-title">Now Let's Make a Sale!</h2>
-        <p className="ob-card-body">
-          {'Let\'s do ONE real sale together so it clicks.\n\n'}
-          {'📋 Scenario:\n'}
-          {'A customer named Chidi walks in and says:\n'}
-          {'"Give me 2 Indomie Onion."\n\n'}
-          {'You will find the product, add it to the cart, pick the payment method, and complete the sale — just like real life!'}
-        </p>
+        <h2 className="ob-card-title">{t('dpNowMakeSaleTitle')}</h2>
+        <p className="ob-card-body">{t('dpScenarioBody')}</p>
         <button className="ob-card-btn" onClick={onStart}>
-          💰 Let's Do It! →
+          {t('dpLetsDoItBtn')}
         </button>
         <button className="dp-skip-link" onClick={onSkip}>
-          Skip — take me to my shop
+          {t('dpSkipLink')}
         </button>
       </div>
     </div>
@@ -83,6 +79,7 @@ function PracticeIntroCard({ onStart, onSkip }) {
 
 // ── Tap overlay (user must tap the highlighted element) ──────────────────────
 function TapGuide({ selector, icon, title, body, onTap }) {
+  const t = useLang()
   const tipW = Math.min(320, window.innerWidth - PAD * 2)
   const result = useTargetRect(selector)
   if (!result) return <div className="ob-shade" />
@@ -115,7 +112,7 @@ function TapGuide({ selector, icon, title, body, onTap }) {
           <p className="ob-tip-body">{body}</p>
         </div>
         <button className="ob-tip-next" onClick={onTap}>
-          {result.found ? '👆 Tap it!' : 'Next →'}
+          {result.found ? t('obTapItBtn') : t('obNextBtn')}
         </button>
       </div>
     </>
@@ -163,12 +160,13 @@ function SpotGuide({ selector, icon, title, body, btnLabel, onNext }) {
 
 // ── Step 3 — Small floating HUD while user completes checkout ────────────────
 function WatchHUD() {
+  const t = useLang()
   return (
     <div className="dp-watch-hud">
       <span className="dp-watch-icon">⏳</span>
       <div>
-        <strong>Almost there!</strong>
-        <span>Complete the checkout to finish the sale</span>
+        <strong>{t('dpWatchAlmostThere')}</strong>
+        <span>{t('dpWatchCompleteCheckout')}</span>
       </div>
     </div>
   )
@@ -176,6 +174,7 @@ function WatchHUD() {
 
 // ── Step 4 — Celebration with confetti ───────────────────────────────────────
 function Celebration({ onMain, onStay }) {
+  const t = useLang()
   return (
     <div className="dp-celebrate">
       <div className="dp-confetti-wrap" aria-hidden>
@@ -198,17 +197,13 @@ function Celebration({ onMain, onStay }) {
 
       <div className="dp-celebrate-box">
         <div className="dp-celebrate-icon">🎉</div>
-        <h2 className="dp-celebrate-title">Sale Complete!</h2>
-        <p className="dp-celebrate-body">
-          {'You just completed your first sale!\n\n'}
-          {'You searched for a product, added it to the cart, chose a payment method, and the transaction was recorded — automatically.\n\n'}
-          {'That\'s exactly how it works every day in your real shop.'}
-        </p>
+        <h2 className="dp-celebrate-title">{t('dpSaleCompleteTitle')}</h2>
+        <p className="dp-celebrate-body">{t('dpSaleCompleteBody')}</p>
         <button className="dp-celebrate-main-btn" onClick={onMain}>
-          🚀 Switch to My Shop
+          {t('dpSwitchToMyShopBtn')}
         </button>
         <button className="dp-celebrate-stay-btn" onClick={onStay}>
-          Stay in Demo to Practice More
+          {t('dpStayDemoBtn')}
         </button>
       </div>
     </div>
@@ -218,6 +213,7 @@ function Celebration({ onMain, onStay }) {
 // ── Root component ────────────────────────────────────────────────────────────
 export default function DemoPractice() {
   const { state, dispatch, activeProfile, switchProfile } = useStore()
+  const t = useLang()
 
   // Record transaction count at mount so we detect new sales, not the demo baseline
   const [baseTxCount] = useState(() => state.transactions.length)
@@ -249,12 +245,18 @@ export default function DemoPractice() {
     setStep(3) // remove overlay, let user interact with checkout freely
   }
 
+  function finish(andSwitchToMain) {
+    dispatch({ type: 'COMPLETE_DEMO_PRACTICE' })
+    if (andSwitchToMain) switchProfile('main')
+    else setStep(5)
+  }
+
   return (
     <>
       {step === 0 && (
         <PracticeIntroCard
           onStart={handleStart}
-          onSkip={() => switchProfile('main')}
+          onSkip={() => finish(true)}
         />
       )}
 
@@ -262,8 +264,8 @@ export default function DemoPractice() {
         <TapGuide
           selector=".home-sell-btn"
           icon="💰"
-          title="Step 1 — Open the Sell Screen"
-          body={'Tap the big green SELL button to open the cashier where you enter what Chidi is buying.'}
+          title={t('dpStep1Title')}
+          body={t('dpStep1Body')}
           onTap={handleTapSell}
         />
       )}
@@ -272,9 +274,9 @@ export default function DemoPractice() {
         <SpotGuide
           selector=".pos-search"
           icon="🔍"
-          title="Step 2 — Find & Add the Product"
-          body={'Type "indomie" in the search box to filter the list.\n\nThen tap "+ Add" twice on Indomie Onion to get a quantity of 2.\n\nYou\'ll see the cart count update at the bottom. When ready, tap the button below!'}
-          btnLabel="I added 2 × Indomie Onion →"
+          title={t('dpStep2Title')}
+          body={t('dpStep2Body')}
+          btnLabel={t('dpStep2Btn')}
           onNext={handleDoneAdding}
         />
       )}
@@ -283,8 +285,8 @@ export default function DemoPractice() {
 
       {step === 4 && (
         <Celebration
-          onMain={() => switchProfile('main')}
-          onStay={() => setStep(5)}
+          onMain={() => finish(true)}
+          onStay={() => finish(false)}
         />
       )}
     </>

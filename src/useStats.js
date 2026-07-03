@@ -13,7 +13,8 @@ export function useStats() {
     totalStock: fixedProducts.reduce((sum, p) => sum + (p.qty || 0), 0),
     totalDebt: (state.customers || []).reduce((sum, c) => sum + c.totalBalance, 0),
     lowStockCount: fixedProducts.filter(p => p.qty <= p.low).length,
-    cartCount: (state.cart || []).reduce((sum, i) => sum + i.qty, 0),
+    cartCount: (state.orders || []).reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0),
+    orderCount: (state.orders || []).filter(o => o.items.length > 0).length,
     todayCount: todayTxns.length,
   }
 }

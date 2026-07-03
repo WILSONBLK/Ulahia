@@ -20,7 +20,7 @@ export default function DebtForm() {
     }
     if (!debt.name || debt.amount <= 0) return
     dispatch({ type: 'ADD_DEBT', payload: debt })
-    showToast(`${debt.name} added to owing book.`)
+    showToast(t('debtAddedToast', { name: debt.name }))
     closeModal()
   }
 
@@ -30,19 +30,19 @@ export default function DebtForm() {
       <form onSubmit={handleSubmit} className="form-grid">
         <label className="label">
           {t('customerName')}
-          <input className="field" name="name" placeholder="e.g. Aunty Grace" required />
+          <input className="field" name="name" placeholder={t('namePlaceholderDebt')} required />
         </label>
         <label className="label">
           {t('phone')}
-          <input className="field" name="phone" placeholder="0803 xxx xxxx" />
+          <input className="field" name="phone" placeholder={t('phonePlaceholder')} />
         </label>
         <label className="label">
           {t('amount')}
-          <input className="field" name="amount" type="number" min="1" placeholder="1200" required />
+          <input className="field" name="amount" type="number" min="1" placeholder={t('amountPlaceholderDebt')} required />
         </label>
         <label className="label">
           {t('reason')}
-          <input className="field" name="reason" placeholder="Rice and oil" />
+          <input className="field" name="reason" placeholder={t('reasonPlaceholder')} />
         </label>
         <div className="row wide">
           <button className="button" type="submit">{t('save')}</button>
