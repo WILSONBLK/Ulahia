@@ -1,17 +1,54 @@
 import { createContext, useContext, useReducer, useEffect, useState } from 'react'
 import { getOrCreateCloudMeta, pushState } from './sync.js'
 import { TOUR_SEEN_KEY } from './utils.js'
+import { setActiveCurrency, DEFAULT_CURRENCY } from './currency.js'
 
 const ACTIVE_KEY = 'ulahia-active-profile'
 const profileKey = id => `ulahia-profile-${id}`
 
+// ── Multi-store registry ──────────────────────────────────────────────────────
+// A "store" is a named data partition (own products, sales, customers). It reuses
+// the profile machinery: each store is a profile keyed by its id. The legacy
+// 'main' profile is the user's first store. 'demo' stays a separate sandbox.
+const STORES_KEY = 'ulahia-stores'
+
+function readStores() {
+  try {
+    const raw = localStorage.getItem(STORES_KEY)
+    const list = raw ? JSON.parse(raw) : null
+    if (Array.isArray(list) && list.length) return list
+  } catch { /* fall through to seed */ }
+  return null
+}
+
+function writeStores(list) {
+  localStorage.setItem(STORES_KEY, JSON.stringify(list))
+}
+
+// Ensure a registry exists; seed it from the existing 'main' profile on first run.
+function ensureStores() {
+  const existing = readStores()
+  if (existing) return existing
+  let name = 'Main Store'
+  try {
+    const main = JSON.parse(localStorage.getItem(profileKey('main')) || '{}')
+    if (main?.shop?.name) name = main.shop.name
+  } catch { /* keep default */ }
+  const seed = [{ id: 'main', name }]
+  writeStores(seed)
+  return seed
+}
+
 const starterState = {
   setupDone: false,
+  loggedOut: false,
   language: 'en',
   view: 'home',
   // Device-local credential (hashed) — like inventoryPin, never synced to cloud
   auth: { passwordHash: null },
-  shop: { name: '', owner: '', phone: '' },
+  shop: { name: '', owner: '', phone: '', businessType: '', currency: DEFAULT_CURRENCY },
+  // Device permission grants captured during onboarding (web APIs where available)
+  permissions: { storage: 'prompt', camera: 'prompt', notifications: 'prompt', sync: 'off' },
   products: [],
   transactions: [],
   customers: [],
@@ -32,7 +69,19 @@ const starterState = {
 const h = n => new Date(Date.now() - n * 3600000).toISOString()
 
 // ─── Products ─────────────────────────────────────────────────────────────────
-const DEMO_PRODUCTS = [
+// Infer a demo product's category from its name so the New Sale filter chips
+// have realistic data to work with in demo mode.
+function demoCategory(name) {
+  const n = name.toLowerCase()
+  if (/(milk|cola|coke|fanta|water|malt|yoghurt|bitters|hollandia|coca)/.test(n)) return 'drinks'
+  if (/(biscuit|pringles|gala|sausage|cabin|cornflakes|golden morn|chin)/.test(n)) return 'snacks'
+  if (/(rice|garri|beans|spaghetti|semovita|sugar|oil|indomie|sardine|tomato|pepper|crayfish|onion|salt|flour)/.test(n)) return 'food'
+  if (/(soap|dettol|candle|toilet|tissue|detergent|omo|sunlight|broom)/.test(n)) return 'household'
+  if (/(vaseline|cream|lotion|toothpaste|pomade|powder|handcream)/.test(n)) return 'personalCare'
+  return 'others'
+}
+
+const DEMO_PRODUCTS = ([
   // Fixed — counted products
   { id: 'p1',  type: 'fixed', name: 'Indomie Onion',          cost: 260,  price: 350,  qty: 22, low: 8  },
   { id: 'p2',  type: 'fixed', name: 'Peak Milk Sachet',        cost: 110,  price: 150,  qty: 13, low: 10 },
@@ -84,7 +133,7 @@ const DEMO_PRODUCTS = [
   { id: 'p47', type: 'flexible', name: 'Crayfish',      invested: 10000 },
   { id: 'p48', type: 'flexible', name: 'Beans',         invested: 18000 },
   { id: 'p49', type: 'flexible', name: 'Onions',        invested: 9000  },
-]
+]).map(p => ({ ...p, category: demoCategory(p.name), image: null }))
 
 // ─── Customers ────────────────────────────────────────────────────────────────
 const DEMO_CUSTOMERS = [
@@ -483,9 +532,11 @@ const DEMO_WITHDRAWALS = [
 
 const demoState = {
   setupDone: true,
+  loggedOut: false,
   language: 'pidgin',
   view: 'home',
-  shop: { name: 'Mama Ngozi Store', owner: 'Ngozi', phone: '0803 000 0000' },
+  shop: { name: 'Mama Ngozi Store', owner: 'Ngozi', phone: '0803 000 0000', businessType: 'grocery', currency: 'NGN' },
+  permissions: { storage: 'prompt', camera: 'prompt', notifications: 'prompt', sync: 'off' },
   products: DEMO_PRODUCTS,
   transactions: DEMO_TRANSACTIONS,
   customers: DEMO_CUSTOMERS,
@@ -563,6 +614,11 @@ function loadState(profileId) {
       if (saved.inventoryPin === undefined) saved.inventoryPin = null
       if (saved.inventoryOtp === undefined) saved.inventoryOtp = null
       if (saved.auth === undefined) saved.auth = { passwordHash: null }
+      if (saved.shop && saved.shop.businessType === undefined) saved.shop.businessType = ''
+      if (saved.shop && saved.shop.currency === undefined) saved.shop.currency = DEFAULT_CURRENCY
+      if (saved.permissions === undefined) {
+        saved.permissions = { storage: 'prompt', camera: 'prompt', notifications: 'prompt', sync: 'off' }
+      }
       if (saved.setupDone === undefined) saved.setupDone = true
       if (saved.darkMode === undefined) saved.darkMode = false
       if (saved.highContrast === undefined) saved.highContrast = false
@@ -575,8 +631,19 @@ function loadState(profileId) {
         if (saved.onboardingDone) localStorage.setItem(TOUR_SEEN_KEY, '1')
       }
       if (saved.practiceDone === undefined) saved.practiceDone = true
-      saved.products = saved.products.map(p => p.type ? p : { ...p, type: 'fixed' })
-      saved.transactions = saved.transactions.map(t => ({
+      if (saved.loggedOut === undefined) saved.loggedOut = false
+      // Orders gain optional customer + discount (POS Review step)
+      if (Array.isArray(saved.orders)) {
+        saved.orders = saved.orders.map(o => ({
+          customer: null, discount: null, ...o,
+        }))
+      }
+      // Products gain optional category + image
+      saved.products = (saved.products || []).map(p => ({
+        category: '', image: null,
+        ...(p.type ? p : { ...p, type: 'fixed' }),
+      }))
+      saved.transactions = (saved.transactions || []).map(t => ({
         ...t,
         items: t.items.map(i => i.type ? i : { ...i, type: 'fixed' }),
       }))
@@ -600,34 +667,63 @@ function updateActiveOrderItems(state, updater) {
 }
 
 function freshOrder(number) {
-  return { id: crypto.randomUUID(), number, customLabel: null, items: [], createdAt: new Date().toISOString() }
+  return { id: crypto.randomUUID(), number, customLabel: null, customer: null, discount: null, items: [], createdAt: new Date().toISOString() }
+}
+
+function nextOrderNumber(state) {
+  const highestExisting = state.orders.reduce((max, order) => {
+    const n = Number(order.number) || 0
+    return n > max ? n : max
+  }, Number(state.orderSeq) || 0)
+  return highestExisting + 1
 }
 
 function reducer(state, action) {
   switch (action.type) {
 
     case 'COMPLETE_SETUP': {
-      // New form: { shop, passwordHash } — legacy callers pass the shop directly
-      const { shop, passwordHash } = action.payload.shop
+      // New form: { shop, passwordHash, permissions } — legacy callers pass the shop directly
+      const { shop, passwordHash, permissions } = action.payload.shop
         ? action.payload
-        : { shop: action.payload, passwordHash: null }
+        : { shop: action.payload, passwordHash: null, permissions: null }
+      const mergedShop = { ...state.shop, ...shop }
+      if (mergedShop.currency) setActiveCurrency(mergedShop.currency)
       return {
         ...state,
         setupDone: true,
-        shop,
+        shop: mergedShop,
         auth: { ...state.auth, passwordHash: passwordHash ?? state.auth?.passwordHash ?? null },
+        permissions: permissions ? { ...state.permissions, ...permissions } : state.permissions,
         view: 'home',
       }
     }
 
-    case 'UPDATE_SHOP':
-      return { ...state, shop: { ...state.shop, ...action.payload } }
+    case 'UPDATE_SHOP': {
+      const shop = { ...state.shop, ...action.payload }
+      if (action.payload.currency) setActiveCurrency(shop.currency)
+      return { ...state, shop }
+    }
+
+    case 'SET_PERMISSION':
+      return {
+        ...state,
+        permissions: { ...state.permissions, [action.payload.key]: action.payload.value },
+      }
 
     case 'SET_LANGUAGE':
       return { ...state, language: action.payload }
 
     case 'SET_VIEW':
       return { ...state, view: action.payload }
+
+    case 'SET_LOGGED_OUT':
+      return { ...state, loggedOut: action.payload }
+
+    case 'LOGIN':
+      return { ...state, loggedOut: false, view: 'home' }
+
+    case 'LOGOUT':
+      return { ...state, loggedOut: true }
 
     case 'ADD_TO_CART': {
       const product = state.products.find(p => p.id === action.payload)
@@ -670,7 +766,7 @@ function reducer(state, action) {
       return updateActiveOrderItems(state, () => [])
 
     case 'NEW_ORDER': {
-      const order = freshOrder(state.orderSeq + 1)
+      const order = freshOrder(nextOrderNumber(state))
       return {
         ...state,
         orders: [...state.orders, order],
@@ -682,6 +778,24 @@ function reducer(state, action) {
     case 'SWITCH_ORDER':
       return { ...state, activeOrderId: action.payload }
 
+    case 'SET_ORDER_CUSTOMER':
+      return {
+        ...state,
+        orders: state.orders.map(o =>
+          o.id === state.activeOrderId
+            ? { ...o, customer: action.payload, customLabel: action.payload?.name?.trim() || null }
+            : o
+        ),
+      }
+
+    case 'SET_ORDER_DISCOUNT':
+      return {
+        ...state,
+        orders: state.orders.map(o =>
+          o.id === state.activeOrderId ? { ...o, discount: action.payload } : o
+        ),
+      }
+
     case 'RENAME_ORDER':
       return {
         ...state,
@@ -689,13 +803,17 @@ function reducer(state, action) {
       }
 
     case 'CLOSE_ORDER': {
+      const highestExisting = state.orders.reduce((max, order) => {
+        const n = Number(order.number) || 0
+        return n > max ? n : max
+      }, Number(state.orderSeq) || 0)
       const remaining = state.orders.filter(o => o.id !== action.payload)
       if (remaining.length > 0) {
         const activeOrderId = state.activeOrderId === action.payload ? remaining[0].id : state.activeOrderId
         return { ...state, orders: remaining, activeOrderId }
       }
-      const order = freshOrder(state.orderSeq + 1)
-      return { ...state, orders: [order], activeOrderId: order.id, orderSeq: order.number }
+      const order = freshOrder(highestExisting)
+      return { ...state, orders: [order], activeOrderId: order.id, orderSeq: highestExisting }
     }
 
     case 'COMPLETE_TRANSACTION': {
@@ -933,11 +1051,41 @@ export function StoreProvider({ children }) {
   const [activeProfile, setActiveProfile] = useState(
     () => localStorage.getItem(ACTIVE_KEY) || 'main'
   )
-  const [state, dispatch] = useReducer(reducer, null, () => loadState(activeProfile))
+  const [stores, setStores] = useState(ensureStores)
+  const [state, dispatch] = useReducer(reducer, null, () => {
+    const loaded = loadState(activeProfile)
+    // Sync money formatting to this profile's currency before first paint
+    setActiveCurrency(loaded.shop?.currency || DEFAULT_CURRENCY)
+    return loaded
+  })
 
   useEffect(() => {
     localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
   }, [state, activeProfile])
+
+  // Keep money formatting in sync across profile switches / cloud restores
+  useEffect(() => {
+    setActiveCurrency(state.shop?.currency || DEFAULT_CURRENCY)
+  }, [state.shop?.currency])
+
+  // Keep the store registry's display name in sync with the active store's shop name
+  useEffect(() => {
+    if (activeProfile === 'demo') return
+    const name = state.shop?.name
+    if (!name) return
+    setStores(prev => {
+      const entry = prev.find(s => s.id === activeProfile)
+      if (!entry) {
+        const next = [...prev, { id: activeProfile, name }]
+        writeStores(next)
+        return next
+      }
+      if (entry.name === name) return prev
+      const next = prev.map(s => s.id === activeProfile ? { ...s, name } : s)
+      writeStores(next)
+      return next
+    })
+  }, [state.shop?.name, activeProfile])
 
   // Cloud sync: debounced push on every main-profile state change
   useEffect(() => {
@@ -973,8 +1121,53 @@ export function StoreProvider({ children }) {
     dispatch({ type: 'LOAD_PROFILE', payload: demoFresh })
   }
 
+  // ── Multi-store operations ──
+  const activeStoreId = activeProfile === 'demo' ? null : activeProfile
+
+  function switchStore(targetId) {
+    if (targetId === activeProfile) return
+    switchProfile(targetId)
+  }
+
+  function addStore(rawName) {
+    const name = (rawName || '').trim() || `Store ${stores.length + 1}`
+    // Save current profile first
+    localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
+    const id = `store-${crypto.randomUUID().slice(0, 8)}`
+    // New store inherits owner/contact + device preferences, starts with empty books
+    const fresh = {
+      ...structuredClone(starterState),
+      setupDone: true,
+      onboardingDone: true,
+      practiceDone: true,
+      language: state.language,
+      darkMode: state.darkMode,
+      highContrast: state.highContrast,
+      auth: state.auth,
+      permissions: state.permissions,
+      shop: {
+        name,
+        owner: state.shop.owner,
+        phone: state.shop.phone,
+        businessType: '',
+        currency: state.shop.currency || DEFAULT_CURRENCY,
+      },
+    }
+    localStorage.setItem(profileKey(id), JSON.stringify(fresh))
+    const nextStores = [...stores, { id, name }]
+    setStores(nextStores)
+    writeStores(nextStores)
+    localStorage.setItem(ACTIVE_KEY, id)
+    setActiveProfile(id)
+    dispatch({ type: 'LOAD_PROFILE', payload: fresh })
+    return id
+  }
+
   return (
-    <StoreContext.Provider value={{ state, dispatch, activeProfile, switchProfile, enterDemoTour }}>
+    <StoreContext.Provider value={{
+      state, dispatch, activeProfile, switchProfile, enterDemoTour,
+      stores, activeStoreId, switchStore, addStore,
+    }}>
       {children}
     </StoreContext.Provider>
   )

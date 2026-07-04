@@ -1098,6 +1098,23 @@ button {
   font-size: 1.2rem;
 }
 
+.pos-session-title-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.pos-session-subtitle {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pos-clear-btn {
   min-height: 38px;
   padding: 0 12px;
@@ -1310,10 +1327,35 @@ button {
   cursor: pointer;
 }
 
+.pos-order-tab-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pos-order-tab-label,
+.pos-order-tab-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pos-order-tab-sub {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .pos-order-tab.is-active {
   border-color: var(--green);
   background: var(--green);
   color: white;
+}
+
+.pos-order-tab.is-active .pos-order-tab-sub {
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .pos-order-tab-meta {
@@ -1383,6 +1425,27 @@ button {
   position: sticky;
   top: -18px;
   z-index: 2;
+}
+
+.co-session-title-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.co-session-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.co-session-subtitle {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .co-back-btn {
@@ -3300,6 +3363,7 @@ button {
   background: #FBF7EF;
   z-index: 1000;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Background illustration — hills, skyline, storefront */
@@ -3319,10 +3383,11 @@ button {
   z-index: 1;
   flex: 1;
   overflow-y: auto;
-  padding: 34px 26px 12px;
-  max-width: 480px;
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 6vw, 4rem) 0.75rem;
+  max-width: 46rem;
   width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .la-welcome-brand {
@@ -3339,7 +3404,7 @@ button {
 
 .la-welcome-tagline {
   margin: 0 0 10px;
-  font-size: 1.12rem;
+  font-size: clamp(1rem, 4.2vw, 1.12rem);
   font-weight: 700;
   font-family: var(--font-head);
   line-height: 1.35;
@@ -3348,7 +3413,7 @@ button {
 
 .la-welcome-body {
   margin: 0 0 20px;
-  font-size: 0.97rem;
+  font-size: clamp(0.92rem, 3.6vw, 0.97rem);
   line-height: 1.5;
   color: #57605B;
 }
@@ -3363,6 +3428,7 @@ button {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
 .la-feature-icon {
@@ -3388,12 +3454,12 @@ button {
 }
 
 .la-feature-text strong {
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 3.8vw, 1rem);
   color: var(--ink);
 }
 
 .la-feature-text span:last-child {
-  font-size: 0.88rem;
+  font-size: clamp(0.82rem, 3.2vw, 0.88rem);
   line-height: 1.4;
   color: #57605B;
 }
@@ -3404,10 +3470,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 24px calc(16px + env(safe-area-inset-bottom, 0px));
-  max-width: 480px;
+  padding: 10px clamp(1rem, 6vw, 4rem) calc(1rem + env(safe-area-inset-bottom, 0px));
+  max-width: 46rem;
   width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .la-welcome-dots {
@@ -3431,8 +3498,8 @@ button {
 /* Shared primary / ghost auth buttons */
 .la-primary-btn {
   width: 100%;
-  min-height: 58px;
-  font-size: 1.08rem;
+  min-height: 54px;
+  font-size: clamp(1rem, 3.8vw, 1.08rem);
 }
 
 .la-ghost-btn {
@@ -3441,13 +3508,13 @@ button {
   justify-content: center;
   gap: 9px;
   width: 100%;
-  min-height: 54px;
+  min-height: 52px;
   border: 1.5px solid #D8DBD2;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.85);
   color: #123F3A;
   font-family: var(--font-head);
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 3.6vw, 1rem);
   font-weight: 700;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -3487,16 +3554,19 @@ button {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .la-login-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 480px;
   width: 100%;
+  max-width: 46rem;
   margin: 0 auto;
-  padding: 18px 20px 0;
+  padding: clamp(0.9rem, 3.5vw, 1.4rem) clamp(1rem, 6vw, 4rem) 0;
+  box-sizing: border-box;
 }
 
 .la-lang-chip {
@@ -3506,7 +3576,7 @@ button {
   border-radius: 999px;
   background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%231E1F22' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
   font-family: var(--font-head);
-  font-size: 0.9rem;
+  font-size: clamp(0.84rem, 3.2vw, 0.9rem);
   font-weight: 700;
   color: var(--ink);
   appearance: none;
@@ -3515,10 +3585,11 @@ button {
 
 .la-login-body {
   flex: 1;
-  max-width: 480px;
   width: 100%;
+  max-width: 46rem;
   margin: 0 auto;
-  padding: 10px 24px 40px;
+  padding: 10px clamp(1rem, 6vw, 4rem) 40px;
+  box-sizing: border-box;
 }
 
 .la-login-brand {
@@ -3529,14 +3600,14 @@ button {
 
 .la-login-title {
   margin: 0 0 4px;
-  font-size: 1.85rem;
+  font-size: clamp(1.45rem, 6.6vw, 1.85rem);
   font-weight: 800;
   color: var(--ink);
 }
 
 .la-login-sub {
   margin: 0 0 22px;
-  font-size: 1rem;
+  font-size: clamp(0.92rem, 3.8vw, 1rem);
   color: var(--muted);
 }
 
@@ -3547,9 +3618,9 @@ button {
   gap: 8px;
   width: 100%;
   min-width: 0;
-  min-height: 56px;
+  min-height: clamp(48px, 12vw, 56px);
   margin-top: 6px;
-  padding: 0 8px 0 14px;
+  padding: 0 clamp(8px, 2vw, 10px) 0 clamp(12px, 3vw, 14px);
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -3564,6 +3635,11 @@ button {
 .la-input-group:focus-within {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(15, 107, 99, 0.12);
+}
+
+.la-input-group.is-invalid {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.12);
 }
 
 .la-input-icon {
@@ -3595,11 +3671,11 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 7px 10px;
+  padding: clamp(6px, 1.8vw, 7px) clamp(8px, 2.4vw, 10px);
   background: #F3F1EC;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: clamp(0.86rem, 3.2vw, 0.92rem);
   color: var(--ink);
   white-space: nowrap;
 }
@@ -3632,10 +3708,10 @@ button {
 .la-input {
   flex: 1;
   min-width: 0;
-  min-height: 52px;
+  min-height: clamp(44px, 11vw, 52px);
   border: none;
   background: transparent;
-  font-size: 1.02rem;
+  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.02rem);
   color: var(--ink);
 }
 
@@ -3644,8 +3720,8 @@ button {
 .la-input-btn {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 8vw, 40px);
+  height: clamp(36px, 8vw, 40px);
   border: none;
   background: none;
   color: var(--muted);
@@ -3657,7 +3733,7 @@ button {
 .la-switch-line {
   margin: 4px 0 0;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: clamp(0.88rem, 3.4vw, 0.95rem);
   color: var(--muted);
 }
 
@@ -3665,9 +3741,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(8px, 2.4vw, 10px);
   margin: 14px 0 0;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 2.8vw, 0.85rem);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -3689,17 +3765,19 @@ button {
   justify-content: center;
   background: var(--bg);
   overflow-y: auto;
-  padding: 24px 16px 48px;
+  overflow-x: hidden;
+  padding: clamp(1rem, 5vw, 3rem) clamp(1rem, 6vw, 4rem) calc(2rem + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
 }
 
 .la-auth-card {
   width: 100%;
-  max-width: 440px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px 22px 28px;
-  box-shadow: 0 4px 28px rgba(30, 31, 34, 0.06);
+  max-width: 46rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: clamp(1.2rem, 4vw, 1.75rem) 0 clamp(1.35rem, 4vw, 1.95rem);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -3710,7 +3788,7 @@ button {
   align-self: flex-start;
   border: none;
   background: none;
-  font-size: 1rem;
+  font-size: clamp(0.92rem, 3.2vw, 1rem);
   font-weight: 700;
   color: var(--muted);
   cursor: pointer;
@@ -3724,17 +3802,17 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: clamp(6px, 2vw, 8px);
 }
 
 .la-auth-title {
-  font-size: 1.5rem;
+  font-size: clamp(1.28rem, 4.8vw, 1.5rem);
   font-weight: 800;
   color: var(--ink);
   margin: 6px 0 4px;
 }
 .la-auth-sub {
-  font-size: 0.95rem;
+  font-size: clamp(0.88rem, 0.84rem + 0.2vw, 0.95rem);
   color: var(--muted);
   line-height: 1.5;
   margin: 0 0 16px;
@@ -3742,26 +3820,33 @@ button {
 .la-auth-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(12px, 3vw, 14px);
 }
 
 /* Error / note boxes */
 .la-error {
-  padding: 12px 14px;
+  padding: clamp(10px, 2.5vw, 12px) clamp(12px, 2.8vw, 14px);
   background: #fff5f5;
   border: 1px solid #ffc9c9;
   border-radius: 10px;
   color: var(--red);
-  font-size: 0.92rem;
+  font-size: clamp(0.86rem, 3vw, 0.92rem);
   font-weight: 600;
   margin: 0;
 }
+.la-field-error {
+  margin: -6px 0 0;
+  font-size: clamp(0.8rem, 2.8vw, 0.88rem);
+  line-height: 1.35;
+  color: var(--red);
+  font-weight: 600;
+}
 .la-note {
-  padding: 10px 14px;
+  padding: clamp(9px, 2.4vw, 10px) clamp(12px, 2.8vw, 14px);
   background: #fffbe6;
   border: 1px solid #ffe08a;
   border-radius: 10px;
-  font-size: 0.88rem;
+  font-size: clamp(0.84rem, 3vw, 0.88rem);
   color: #7c5c00;
   margin: 0;
 }
@@ -3769,9 +3854,9 @@ button {
 /* Recovery code input — large monospace */
 .la-code-input {
   font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
-  font-size: 1.5rem;
+  font-size: clamp(1.08rem, 5vw, 1.5rem);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: clamp(0.08em, 1vw, 0.18em);
   text-transform: uppercase;
   text-align: center;
 }
@@ -3784,19 +3869,19 @@ button {
   text-align: center;
 }
 .la-code-icon {
-  font-size: 2.8rem;
-  margin-bottom: 4px;
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  margin-bottom: clamp(2px, 1vw, 4px);
 }
 .la-code-display {
-  margin: 16px 0;
-  padding: 18px;
+  margin: clamp(14px, 3.5vw, 16px) 0;
+  padding: clamp(14px, 4vw, 18px);
   background: #E3EFED;
   border: 2px dashed #0F6B63;
   border-radius: 14px;
 }
 .la-code-label {
   display: block;
-  font-size: 0.82rem;
+  font-size: clamp(0.77rem, 2.8vw, 0.82rem);
   font-weight: 800;
   color: #0A4C45;
   text-transform: uppercase;
@@ -3804,17 +3889,18 @@ button {
   margin-bottom: 10px;
 }
 .la-code-value {
-  font-size: 2.4rem;
+  font-size: clamp(1.75rem, 8vw, 2.4rem);
   font-weight: 800;
   font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
-  letter-spacing: 0.22em;
+  letter-spacing: clamp(0.12em, 1.3vw, 0.22em);
   color: #0F6B63;
+  overflow-wrap: anywhere;
 }
 .la-code-tips {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 8px 0 16px;
+  gap: clamp(6px, 1.6vw, 8px);
+  margin: clamp(8px, 2vw, 10px) 0 clamp(14px, 3.5vw, 16px);
 }
 .la-code-tip {
   padding: 11px 14px;
@@ -4421,15 +4507,15 @@ button {
 
 .la-dial-caret {
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 2.6vw, 0.75rem);
 }
 
 .la-agree-check {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: clamp(8px, 2.4vw, 10px);
   margin-top: 2px;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 3.2vw, 0.9rem);
   line-height: 1.45;
   color: var(--ink);
   cursor: pointer;
@@ -4455,7 +4541,7 @@ button {
 .la-forgot-line {
   margin: -8px 0 0;
   text-align: right;
-  font-size: 0.88rem;
+  font-size: clamp(0.82rem, 3vw, 0.88rem);
 }
 
 .la-forgot-line--hint {
@@ -4466,10 +4552,10 @@ button {
 .la-or-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(10px, 2.8vw, 12px);
   margin: 2px 0;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: clamp(0.74rem, 2.6vw, 0.78rem);
   font-weight: 800;
   letter-spacing: 0.06em;
 }
@@ -4493,9 +4579,9 @@ button {
 .la-lang-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 68px;
-  padding: 12px 16px;
+  gap: clamp(10px, 3vw, 14px);
+  min-height: clamp(60px, 14vw, 68px);
+  padding: clamp(10px, 2.8vw, 12px) clamp(12px, 3.6vw, 16px);
   background: var(--panel);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
@@ -4512,12 +4598,12 @@ button {
 .la-lang-avatar {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: clamp(40px, 10vw, 46px);
+  height: clamp(40px, 10vw, 46px);
   border-radius: 50%;
   font-family: var(--font-head);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: clamp(0.88rem, 3.4vw, 0.95rem);
   flex-shrink: 0;
 }
 
@@ -4535,17 +4621,17 @@ button {
 }
 
 .la-lang-text strong {
-  font-size: 1.02rem;
+  font-size: clamp(0.95rem, 3.6vw, 1.02rem);
 }
 
 .la-lang-text span:last-child {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 3vw, 0.85rem);
 }
 
 .la-radio {
-  width: 22px;
-  height: 22px;
+  width: clamp(19px, 5vw, 22px);
+  height: clamp(19px, 5vw, 22px);
   border: 2px solid var(--line);
   border-radius: 50%;
   flex-shrink: 0;
@@ -4560,8 +4646,8 @@ button {
 
 .la-radio.is-checked::after {
   content: '';
-  width: 11px;
-  height: 11px;
+  width: 55%;
+  height: 55%;
   background: var(--green);
   border-radius: 50%;
 }
@@ -4569,12 +4655,12 @@ button {
 .la-info-card {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: clamp(10px, 3vw, 12px);
   margin: 18px 0;
-  padding: 14px 16px;
+  padding: clamp(12px, 3.6vw, 14px) clamp(14px, 4vw, 16px);
   background: #EDF3EC;
   border-radius: var(--radius);
-  font-size: 0.88rem;
+  font-size: clamp(0.82rem, 3.2vw, 0.88rem);
   line-height: 1.5;
   color: var(--ink);
 }
@@ -4604,10 +4690,10 @@ button {
 .perm-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: clamp(10px, 3vw, 14px);
   width: 100%;
-  min-height: 72px;
-  padding: 12px 14px;
+  min-height: clamp(64px, 15vw, 72px);
+  padding: clamp(10px, 2.8vw, 12px) clamp(12px, 3.2vw, 14px);
   background: var(--panel);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
@@ -4623,8 +4709,8 @@ button {
 .perm-row-icon {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: clamp(40px, 10vw, 46px);
+  height: clamp(40px, 10vw, 46px);
   color: var(--green);
   background: #E3EFED;
   border-radius: var(--radius-sm);
@@ -4642,8 +4728,8 @@ button {
   line-height: 1.35;
 }
 
-.perm-row-text strong { font-family: var(--font-head); font-size: 1rem; }
-.perm-row-text span { color: var(--muted); font-size: 0.84rem; }
+.perm-row-text strong { font-family: var(--font-head); font-size: clamp(0.94rem, 3.6vw, 1rem); }
+.perm-row-text span { color: var(--muted); font-size: clamp(0.8rem, 3vw, 0.84rem); }
 
 .perm-row-status {
   display: inline-flex;
@@ -4651,7 +4737,7 @@ button {
   gap: 5px;
   flex-shrink: 0;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: clamp(0.76rem, 2.8vw, 0.8rem);
   font-weight: 700;
 }
 .perm-row-status--ok { color: var(--success); }
@@ -4672,20 +4758,20 @@ button {
 .perm-privacy {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: clamp(10px, 3vw, 12px);
   margin: 18px 0;
-  padding: 14px 16px;
+  padding: clamp(12px, 3.6vw, 14px) clamp(14px, 4vw, 16px);
   background: #EDF3EC;
   border-radius: var(--radius);
-  font-size: 0.86rem;
+  font-size: clamp(0.8rem, 3vw, 0.86rem);
   line-height: 1.5;
   color: var(--ink);
 }
 .perm-privacy-icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 9vw, 40px);
+  height: clamp(36px, 9vw, 40px);
   color: var(--green);
   background: #D6E8E2;
   border-radius: 50%;
@@ -4732,7 +4818,7 @@ button {
 .cs-counter {
   color: var(--muted);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: clamp(0.76rem, 2.8vw, 0.8rem);
 }
 
 /* ══════════════════════════════════════
@@ -4745,14 +4831,14 @@ button {
   margin: 6px 0 2px;
 }
 .setup-dot {
-  width: 8px;
-  height: 8px;
+  width: clamp(7px, 1.8vw, 8px);
+  height: clamp(7px, 1.8vw, 8px);
   border-radius: 50%;
   background: var(--line);
   transition: width 0.2s, background 0.2s;
 }
 .setup-dot--active {
-  width: 22px;
+  width: clamp(18px, 5vw, 22px);
   border-radius: 5px;
   background: var(--green);
 }
@@ -4773,8 +4859,8 @@ button {
 .as-check {
   display: grid;
   place-items: center;
-  width: 92px;
-  height: 92px;
+  width: clamp(76px, 20vw, 92px);
+  height: clamp(76px, 20vw, 92px);
   color: white;
   background: var(--green);
   border-radius: 50%;
@@ -4808,32 +4894,32 @@ button {
 .as-next-card {
   width: 100%;
   margin: 18px 0;
-  padding: 18px;
+  padding: clamp(14px, 4vw, 18px);
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   text-align: left;
 }
-.as-next-title { display: block; font-size: 1rem; margin-bottom: 12px; }
+.as-next-title { display: block; font-size: clamp(0.92rem, 3.6vw, 1rem); margin-bottom: 12px; }
 .as-next-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: clamp(10px, 3vw, 14px);
   padding: 8px 0;
 }
 .as-next-icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 9vw, 40px);
+  height: clamp(36px, 9vw, 40px);
   color: var(--green);
   background: #E3EFED;
   border-radius: 50%;
   flex-shrink: 0;
 }
 .as-next-text { display: flex; flex-direction: column; line-height: 1.3; }
-.as-next-text strong { font-size: 0.95rem; }
-.as-next-text span { color: var(--muted); font-size: 0.83rem; }
+.as-next-text strong { font-size: clamp(0.88rem, 3.4vw, 0.95rem); }
+.as-next-text span { color: var(--muted); font-size: clamp(0.78rem, 2.8vw, 0.83rem); }
 
 /* Dark mode surfaces for new onboarding screens */
 .app--dark .perm-row,
@@ -5180,18 +5266,19 @@ button {
    • text scales down gracefully on small phones, steady on tablet/desktop
    • every primary screen sits in a centered, comfortably-wide column
    ══════════════════════════════════════════════════════════════════ */
-:root { --app-max: 520px; }
+:root { --app-max: 1220px; }
 
 /* Fluid root font — all rem-based text scales with it.
    ~15px @320w → ~17px @400w+, capped so tablets/desktop stay readable. */
 html { font-size: clamp(15px, calc(3.2vw + 4.5px), 17px); }
 body { font-size: 1rem; }
 
-/* Center the primary content columns on wider screens */
+/* Center the primary content columns on wider screens — capped generously
+   so the app fills large viewports instead of sitting in a narrow column */
 .home-screen,
 .pos-screen { max-width: var(--app-max); width: 100%; margin-inline: auto; }
 .layout { width: min(var(--app-max), 100%); }
-.la-login-page { max-width: var(--app-max); margin-inline: auto; width: 100%; }
+.la-login-page { width: 100%; margin-inline: 0; }
 .topbar { max-width: var(--app-max); margin-inline: auto; }
 
 /* Bottom nav aligns over the content column instead of stretching */
@@ -5226,18 +5313,14 @@ body { font-size: 1rem; }
   .store-chip { max-width: 118px; }
 }
 
-/* Desktop: frame the app column so it doesn't float in empty space */
+/* Desktop: content column widens and centers, but stays full-bleed —
+   no boxed card, no shadow, no surrounding frame color */
 @media (min-width: 640px) {
-  body { background: #ECEAE4; }
-  .app--dark body { background: #0D1011; }
-  .home-screen,
-  .pos-screen,
-  .layout,
   .la-login-page {
-    box-shadow: 0 0 0 1px var(--line), 0 24px 60px rgba(30, 31, 34, 0.06);
+    min-height: 100dvh;
+    max-width: none;
     background: var(--bg);
   }
-  .la-login-page { min-height: 100dvh; }
   /* In-app screens fill the flex column (see .app) — forcing 100dvh would push
      their fixed bottom bars behind the nav */
   .home-screen,

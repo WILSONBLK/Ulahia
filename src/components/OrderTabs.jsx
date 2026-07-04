@@ -9,7 +9,11 @@ export default function OrderTabs() {
   const [confirmCloseId, setConfirmCloseId] = useState(null)
 
   function labelFor(order) {
-    return order.customLabel || t('orderCustomerLabel', { n: order.number })
+    return order.customer?.name?.trim() || `Sale ${order.number}`
+  }
+
+  function subLabelFor(order) {
+    return order.customer?.name?.trim() ? `Sale ${order.number}` : t('rsWalkIn')
   }
 
   function requestClose(e, order) {
@@ -54,7 +58,10 @@ export default function OrderTabs() {
             className={`pos-order-tab${isActive ? ' is-active' : ''}`}
             onClick={() => dispatch({ type: 'SWITCH_ORDER', payload: order.id })}
           >
-            <span className="pos-order-tab-label">{labelFor(order)}</span>
+            <span className="pos-order-tab-copy">
+              <span className="pos-order-tab-label">{labelFor(order)}</span>
+              <span className="pos-order-tab-sub">{subLabelFor(order)}</span>
+            </span>
             {count > 0 && <span className="pos-order-tab-meta">{count} · {money(total)}</span>}
             <span
               className="pos-order-tab-close"
@@ -68,7 +75,7 @@ export default function OrderTabs() {
         )
       })}
       <button className="pos-order-tab pos-order-tab-add" onClick={() => dispatch({ type: 'NEW_ORDER' })}>
-        + {t('addCustomer')}
+        + New Sale
       </button>
     </div>
   )

@@ -1,10 +1,17 @@
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store.jsx'
 import { useStats } from '../useStats.js'
+import { useNotifications } from '../useNotifications.js'
 import { useModal } from '../modal.jsx'
 import { money } from '../utils.js'
-import Logo from './Logo.jsx'
+import { LogoLockup } from './Logo.jsx'
 import { useLang } from '../useLang.js'
+import {
+  IconMenu, IconBell, IconStore, IconChevronDown, IconChevron,
+  IconCart, IconCheck, IconPlus,
+} from './icons.jsx'
 
+// Close-of-day summary — end-of-day reconciliation (cash / transfer / credit)
 function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
   const { closeModal } = useModal()
   const t = useLang()
@@ -15,26 +22,11 @@ function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
         <h3 className="cod-title">{t('todaysSummary')}</h3>
       </div>
       <div className="cod-grid">
-        <div className="cod-card cod-card--sales">
-          <span>{t('totalSalesLabel')}</span>
-          <strong>{money(stats.todaySales)}</strong>
-        </div>
-        <div className="cod-card cod-card--profit">
-          <span>{t('profit')}</span>
-          <strong>{money(stats.todayProfit)}</strong>
-        </div>
-        <div className="cod-card">
-          <span>{t('transactions')}</span>
-          <strong>{stats.todayCount}</strong>
-        </div>
-        <div className="cod-card">
-          <span>{t('cashReceivedLabel')}</span>
-          <strong>{money(todayCash)}</strong>
-        </div>
-        <div className="cod-card">
-          <span>{t('transfersLabel')}</span>
-          <strong>{money(todayTransfer)}</strong>
-        </div>
+        <div className="cod-card cod-card--sales"><span>{t('totalSalesLabel')}</span><strong>{money(stats.todaySales)}</strong></div>
+        <div className="cod-card cod-card--profit"><span>{t('profit')}</span><strong>{money(stats.todayProfit)}</strong></div>
+        <div className="cod-card"><span>{t('transactions')}</span><strong>{stats.todayCount}</strong></div>
+        <div className="cod-card"><span>{t('cashReceivedLabel')}</span><strong>{money(todayCash)}</strong></div>
+        <div className="cod-card"><span>{t('transfersLabel')}</span><strong>{money(todayTransfer)}</strong></div>
         {todayDebt > 0 && (
           <div className="cod-card" style={{ borderColor: '#ffc9c9', background: '#fff5f5' }}>
             <span style={{ color: 'var(--red)' }}>{t('creditGiven')}</span>
@@ -47,193 +39,214 @@ function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
   )
 }
 
+// Add-store modal — creates a new store partition and switches to it
+function AddStoreModal() {
+  const { addStore } = useStore()
+  const { closeModal } = useModal()
+  const t = useLang()
+  const [name, setName] = useState('')
+  const ref = useRef(null)
+  useEffect(() => { ref.current?.focus() }, [])
+  return (
+    <div className="store-modal">
+      <h3>{t('dashAddStore')}</h3>
+      <label className="label">
+        {t('dashNewStoreTitle')}
+        <input ref={ref} className="field" value={name} maxLength={50}
+          placeholder={t('dashNewStorePlaceholder')}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { addStore(name); closeModal() } }} />
+      </label>
+      <div className="row" style={{ marginTop: 14 }}>
+        <button className="button" disabled={!name.trim()}
+          style={{ opacity: name.trim() ? 1 : 0.5 }}
+          onClick={() => { addStore(name); closeModal() }}>
+          {t('dashCreateStore')}
+        </button>
+        <button className="button light" onClick={closeModal}>{t('cancel')}</button>
+      </div>
+    </div>
+  )
+}
+
+// Store selector chip + dropdown
+function StoreSelector() {
+  const { state, stores, activeStoreId, switchStore, activeProfile } = useStore()
+  const { openModal } = useModal()
+  const t = useLang()
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDoc = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
+
+  const isDemo = activeProfile === 'demo'
+  const label = isDemo ? t('demoAccountBadge') : (state.shop.name || t('dashStores'))
+
+  return (
+    <div className="store-select" ref={ref}>
+      <button className="store-chip" onClick={() => !isDemo && setOpen(o => !o)} disabled={isDemo}>
+        <span className="store-chip-icon"><IconStore size={18} /></span>
+        <span className="store-chip-name">{label}</span>
+        {!isDemo && <IconChevronDown size={16} />}
+      </button>
+
+      {open && (
+        <div className="store-menu">
+          <span className="store-menu-head">{t('dashStores')}</span>
+          {stores.map(s => (
+            <button key={s.id} className={`store-menu-item${s.id === activeStoreId ? ' is-active' : ''}`}
+              onClick={() => { switchStore(s.id); setOpen(false) }}>
+              <span className="store-menu-item-icon"><IconStore size={16} /></span>
+              <span className="store-menu-item-name">{s.name}</span>
+              {s.id === activeStoreId && <IconCheck size={16} />}
+            </button>
+          ))}
+          <button className="store-menu-add" onClick={() => { setOpen(false); openModal(<AddStoreModal />) }}>
+            <IconPlus size={16} /> {t('dashAddStore')}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Home() {
-  const { state, dispatch, activeProfile, enterDemoTour } = useStore()
+  const { state, dispatch } = useStore()
   const t = useLang()
   const { openModal } = useModal()
   const stats = useStats()
-  const { todaySales, todayProfit, cartCount, orderCount, totalDebt, todayCount, lowStockCount } = stats
+  const { count: notifCount } = useNotifications()
+  const { todaySales, todayProfit, todayCount } = stats
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? t('greetMorning') : hour < 17 ? t('greetAfternoon') : t('greetEvening')
 
+  // Unique customers served today (named customers only)
   const today = new Date().toDateString()
-  const todayTxns = state.transactions.filter(t => new Date(t.time).toDateString() === today)
-  const todayCash = todayTxns.filter(t => t.mode === 'cash').reduce((s, t) => s + t.amountPaid, 0)
-  const todayTransfer = todayTxns.filter(t => t.mode === 'transfer').reduce((s, t) => s + t.amountPaid, 0)
-  const todayDebt = todayTxns.filter(t => t.mode === 'debt').reduce((s, t) => s + t.balance, 0)
-  const todayExpenseTotal = state.expenses
-    .filter(e => new Date(e.time).toDateString() === today)
-    .reduce((s, e) => s + e.amount, 0)
-
-  function go(view) {
-    dispatch({ type: 'SET_VIEW', payload: view })
-  }
+  const todayTxns = state.transactions.filter(x => new Date(x.time).toDateString() === today)
+  const todayCustomers = new Set(todayTxns.map(x => x.customerId).filter(Boolean)).size
+  const todayCash = todayTxns.filter(x => x.mode === 'cash').reduce((s, x) => s + x.amountPaid, 0)
+  const todayTransfer = todayTxns.filter(x => x.mode === 'transfer').reduce((s, x) => s + x.amountPaid, 0)
+  const todayDebt = todayTxns.filter(x => x.mode === 'debt').reduce((s, x) => s + x.balance, 0)
 
   function openCloseOfDay() {
-    openModal(
-      <CloseOfDayModal
-        stats={stats}
-        todayCash={todayCash}
-        todayTransfer={todayTransfer}
-        todayDebt={todayDebt}
-      />
-    )
+    openModal(<CloseOfDayModal stats={stats} todayCash={todayCash} todayTransfer={todayTransfer} todayDebt={todayDebt} />)
+  }
+
+  // Open sales = carts with items; active one is "In Progress", the rest "On Hold"
+  const openOrders = state.orders.filter(o => o.items.length > 0)
+
+  function go(view) { dispatch({ type: 'SET_VIEW', payload: view }) }
+
+  function resumeOrder(order) {
+    dispatch({ type: 'SWITCH_ORDER', payload: order.id })
+    go('sell')
+  }
+
+  function orderLabel(o) { return o.customLabel || t('orderCustomerLabel', { n: o.number }) }
+  function initials(str) {
+    return String(str).split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   }
 
   return (
-    <div className="home-screen">
-
-      {/* Header row */}
-      <div className="home-header">
-        <div className="home-brand">
-          <Logo size={34} />
-          <div>
-            <strong className="home-brand-name">Ulahia</strong>
-            <span className="home-shop-name">{state.shop.name}</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div className="theme-toggles">
-            <button
-              className={`theme-btn${state.highContrast ? ' is-active' : ''}`}
-              title={t('highContrastTitle')}
-              onClick={() => dispatch({ type: 'TOGGLE_HIGH_CONTRAST' })}
-            >
-              {state.highContrast ? '👁' : '🔆'}
-            </button>
-            <button
-              className={`theme-btn${state.darkMode ? ' is-active' : ''}`}
-              title={t('darkModeTitle')}
-              onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
-            >
-              {state.darkMode ? '☀️' : '🌙'}
-            </button>
-          </div>
-          <select
-            className="select home-lang"
-            value={state.language}
-            onChange={e => dispatch({ type: 'SET_LANGUAGE', payload: e.target.value })}
-          >
-            <option value="pidgin">Pidgin</option>
-            <option value="en">English</option>
-            <option value="yo">Yoruba</option>
-            <option value="ig">Igbo</option>
-            <option value="ha">Hausa</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Greeting */}
-      <div className="home-greeting">
-        <p>{greeting}, <strong>{state.shop.owner || state.shop.name}</strong> 👋</p>
-      </div>
-
-      {/* Low stock warning */}
-      {lowStockCount > 0 && (
-        <button className="home-lowstock-banner" onClick={() => go('products')}>
-          <span className="home-lowstock-icon">⚠️</span>
-          <span className="home-lowstock-text">
-            <strong>{lowStockCount === 1 ? t('lowStockBannerOne') : t('lowStockBannerMany', { n: lowStockCount })}</strong>
-            <span>{t('lowStockTapHint')}</span>
-          </span>
-          <span className="home-lowstock-arrow">›</span>
+    <div className="home-screen home-v2">
+      {/* Header: menu · brand · notifications */}
+      <header className="home-topbar">
+        <button className="home-iconbtn" aria-label={t('navMore')} onClick={() => go('more')}>
+          <IconMenu size={24} />
         </button>
+        <LogoLockup size={30} tagline={false} />
+        <button className="home-iconbtn home-bell" aria-label={t('navNotifications')} onClick={() => go('notifications')}>
+          <IconBell size={23} />
+          {notifCount > 0 && <span className="home-bell-badge">{notifCount}</span>}
+        </button>
+      </header>
+
+      {/* Greeting + store selector */}
+      <div className="home-greet-row">
+        <div className="home-greet">
+          <span className="home-greet-hello">{greeting},</span>
+          <strong className="home-greet-name">{state.shop.owner || state.shop.name} 👋</strong>
+          <span className="home-greet-sub">{t('dashSubtitle')}</span>
+        </div>
+        <StoreSelector />
+      </div>
+
+      {/* Big circular SELL */}
+      <div className="home-sell-wrap">
+        <button className="home-sell-circle" onClick={() => go('sell')}>
+          <IconCart size={40} />
+          <span className="home-sell-circle-title">{t('dashSellNow')}</span>
+          <span className="home-sell-circle-sub">{t('dashStartNewSale')}</span>
+        </button>
+      </div>
+
+      {/* Open Sales */}
+      {openOrders.length > 0 && (
+        <section className="home-open">
+          <div className="home-section-head">
+            <strong>{t('dashOpenSales')} ({openOrders.length})</strong>
+            <button className="home-link" onClick={() => go('sell')}>{t('dashViewAll')}</button>
+          </div>
+          <div className="home-open-list">
+            {openOrders.map(o => {
+              const label = orderLabel(o)
+              const qty = o.items.reduce((s, i) => s + i.qty, 0)
+              const total = o.items.reduce((s, i) => s + i.price * i.qty, 0)
+              const active = o.id === state.activeOrderId
+              return (
+                <button key={o.id} className="home-open-row" onClick={() => resumeOrder(o)}>
+                  <span className="home-open-avatar">{initials(label)}</span>
+                  <span className="home-open-info">
+                    <strong>{label}</strong>
+                    <span>{qty === 1 ? t('cartHintOne') : t('cartHintMany', { n: qty })}</span>
+                  </span>
+                  <span className="home-open-amount">{money(total)}</span>
+                  <span className={`home-open-status home-open-status--${active ? 'progress' : 'hold'}`}>
+                    {active ? t('dashInProgress') : t('dashOnHold')}
+                  </span>
+                  <span className="home-open-chevron"><IconChevron size={18} /></span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
       )}
 
-      {/* ── BIG SELL BUTTON ── */}
-      <button className="home-sell-btn" onClick={() => go('sell')}>
-        <span className="home-sell-icon">💰</span>
-        <span className="home-sell-label">{t('newSale')}</span>
-        {cartCount > 0 && (
-          <span className="home-sell-sub">
-            {orderCount > 1
-              ? t('ordersWaitingHint', { n: orderCount })
-              : (cartCount === 1 ? t('cartHintOne') : t('cartHintMany', { n: cartCount }))}
-          </span>
-        )}
-      </button>
-
-      {/* ── Navigation tiles ── */}
-      <div className="home-grid">
-        <button className="home-tile" onClick={() => go('customers')}>
-          <span className="home-tile-icon">👥</span>
-          <span className="home-tile-label">{t('navCustomers')}</span>
-          <span className="home-tile-sub">{t('customersSub')}</span>
-        </button>
-        <button className="home-tile home-tile--debt" onClick={() => go('debts')}>
-          <span className="home-tile-icon">📋</span>
-          <span className="home-tile-label">{t('navDebts')}</span>
-          {totalDebt > 0
-            ? <span className="home-tile-sub home-tile-sub--bad">{money(totalDebt)} {t('owedSuffix')}</span>
-            : <span className="home-tile-sub">{t('debtsSub')}</span>
-          }
-        </button>
-        <button className="home-tile" onClick={() => go('products')}>
-          <span className="home-tile-icon">📦</span>
-          <span className="home-tile-label">{t('navProducts')}</span>
-          <span className="home-tile-sub">{t('productsSub')}</span>
-        </button>
-        <button className="home-tile" onClick={() => go('reports')}>
-          <span className="home-tile-icon">📊</span>
-          <span className="home-tile-label">{t('navReports')}</span>
-          <span className="home-tile-sub">{t('reportsSub')}</span>
-        </button>
-        <button className="home-tile" onClick={() => go('expenses')}>
-          <span className="home-tile-icon">🧾</span>
-          <span className="home-tile-label">{t('navExpenses')}</span>
-          {todayExpenseTotal > 0
-            ? <span className="home-tile-sub">{money(todayExpenseTotal)} {t('todayLowerSuffix')}</span>
-            : <span className="home-tile-sub">{t('expensesSub')}</span>
-          }
-        </button>
-      </div>
-
-      {/* Settings row */}
-      <button className="home-settings-row" onClick={() => go('settings')}>
-        <span>⚙️</span>
-        <span style={{ flex: 1 }}>{t('navSettings')}</span>
-        <span className="home-settings-arrow">›</span>
-      </button>
-
-      {/* Help row */}
-      <button className="home-settings-row" onClick={() => go('help')}>
-        <span>❓</span>
-        <span style={{ flex: 1 }}>{t('navHelp')}</span>
-        <span className="home-settings-arrow">›</span>
-      </button>
-
-      {/* Demo Mode button — only visible on main profile */}
-      {activeProfile === 'main' && (
-        <button className="home-demo-btn" onClick={enterDemoTour}>
-          <span className="home-demo-icon">🎮</span>
-          <span className="home-demo-text">
-            <strong>{t('tryDemoMode')}</strong>
-            <span>{t('demoModeHint')}</span>
-          </span>
-          <span className="home-demo-arrow">›</span>
-        </button>
-      )}
-
-      {/* Today summary + Close of Day */}
-      <div className="home-today" style={{ cursor: 'pointer' }} onClick={openCloseOfDay}>
-        <div className="home-stat">
-          <span>{t('todaySales')}</span>
-          <strong>{money(todaySales)}</strong>
-          {todayCount > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>{todayCount === 1 ? t('saleCountOne') : t('saleCountMany', { n: todayCount })}</span>}
+      {/* Today's Summary — 4 stats */}
+      <section className="home-summary">
+        <div className="home-section-head">
+          <strong className="home-section-title">{t('dashTodaySummary')}</strong>
+          <button className="home-link" onClick={openCloseOfDay}>📋 {t('daySummary')}</button>
         </div>
-        <div className="home-divider" />
-        <div className="home-stat">
-          <span>{t('todayProfit')}</span>
-          <strong style={{ color: 'var(--green)' }}>{money(todayProfit)}</strong>
+        <div className="home-summary-grid">
+          <button className="home-stat-card" onClick={() => go('reports')}>
+            <span className="home-stat-icon home-stat-icon--sales">💰</span>
+            <span className="home-stat-label">{t('totalSalesLabel')}</span>
+            <strong>{money(todaySales)}</strong>
+          </button>
+          <button className="home-stat-card" onClick={() => go('reports')}>
+            <span className="home-stat-icon home-stat-icon--profit">📈</span>
+            <span className="home-stat-label">{t('profit')}</span>
+            <strong>{money(todayProfit)}</strong>
+          </button>
+          <button className="home-stat-card" onClick={() => go('reports')}>
+            <span className="home-stat-icon home-stat-icon--orders">🧾</span>
+            <span className="home-stat-label">{t('dashOrders')}</span>
+            <strong>{todayCount}</strong>
+          </button>
+          <button className="home-stat-card" onClick={() => go('customers')}>
+            <span className="home-stat-icon home-stat-icon--cust">👥</span>
+            <span className="home-stat-label">{t('navCustomers')}</span>
+            <strong>{todayCustomers}</strong>
+          </button>
         </div>
-        <div className="home-divider" />
-        <div className="home-stat">
-          <span style={{ fontSize: '0.72rem', color: 'var(--green)', fontWeight: 800 }}>📋 {t('daySummary')}</span>
-          <strong style={{ fontSize: '0.85rem', color: 'var(--green)' }}>{t('viewArrow')}</strong>
-        </div>
-      </div>
-
+      </section>
     </div>
   )
 }

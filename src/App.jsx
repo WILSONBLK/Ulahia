@@ -7,6 +7,7 @@ import LandingAuth from './components/LandingAuth.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import Home from './components/Home.jsx'
 import POSScreen from './components/POSScreen.jsx'
+import ReviewSale from './components/ReviewSale.jsx'
 import Customers from './components/Customers.jsx'
 import Products from './components/Products.jsx'
 import Reports from './components/Reports.jsx'
@@ -17,12 +18,15 @@ import BottomNav from './components/BottomNav.jsx'
 import DemoPractice from './components/DemoPractice.jsx'
 import Help from './components/Help.jsx'
 import More from './components/More.jsx'
+import Notifications from './components/Notifications.jsx'
+import Logout from './components/Logout.jsx'
 import LockScreen from './components/LockScreen.jsx'
 import { TOUR_SEEN_KEY } from './utils.js'
 
 const VIEWS = {
   home: Home,
   sell: POSScreen,
+  review: ReviewSale,
   customers: Customers,
   debts: Customers,
   products: Products,
@@ -31,6 +35,8 @@ const VIEWS = {
   settings: Settings,
   help: Help,
   more: More,
+  logout: Logout,
+  notifications: Notifications,
   'bulk-restock': BulkRestock,
 }
 
@@ -43,6 +49,7 @@ export default function App() {
   const [, bumpLock] = useState(0)
 
   if (!state.setupDone) return <LandingAuth />
+  if (activeProfile === 'main' && state.setupDone && state.loggedOut) return <LandingAuth initialPhase="login" />
 
   // Password lock on app open (per browser session). Signup/login set the
   // flag themselves, so it only triggers on a genuine cold open. Demo never locks.
@@ -54,6 +61,7 @@ export default function App() {
   const View = VIEWS[state.view] || Home
   const isHome = state.view === 'home'
   const isPOS = state.view === 'sell'
+  const isReview = state.view === 'review'
 
   const appClass = [
     'app',
@@ -88,7 +96,7 @@ export default function App() {
       {offlineBanner}
       {demoBanner}
 
-      {(isHome || isPOS)
+      {(isHome || isPOS || isReview)
         ? <View />
         : (
           <>

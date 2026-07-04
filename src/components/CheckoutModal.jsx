@@ -15,14 +15,16 @@ export default function CheckoutModal() {
 
   const activeOrder = getActiveOrder(state)
   const hasMultipleOrders = state.orders.length > 1
-  const activeOrderLabel = activeOrder.customLabel || t('orderCustomerLabel', { n: activeOrder.number })
+  const activeOrderLabel = activeOrder.customer?.name?.trim() || `Sale ${activeOrder.number}`
+  const activeOrderSub = activeOrder.customer?.name?.trim() ? `Sale ${activeOrder.number}` : t('rsWalkIn')
 
   const [mode, setMode] = useState('cash')
   const [transferConfirmed, setTransferConfirmed] = useState(false)
-  const [customer, setCustomer] = useState(null)
+  // Customer + discount may already be set on the order from the Review step
+  const [customer, setCustomer] = useState(activeOrder.customer || null)
   const [amountReceived, setAmountReceived] = useState('')
-  const [discountType, setDiscountType] = useState(null) // null | 'percent' | 'flat'
-  const [discountValue, setDiscountValue] = useState('')
+  const [discountType, setDiscountType] = useState(activeOrder.discount?.type || null)
+  const [discountValue, setDiscountValue] = useState(activeOrder.discount?.value ? String(activeOrder.discount.value) : '')
 
   const rawItems = activeOrder.items.map(i => ({ ...i, subtotal: i.price * i.qty }))
   const rawTotal = rawItems.reduce((sum, i) => sum + i.subtotal, 0)
@@ -50,7 +52,8 @@ export default function CheckoutModal() {
     setMode(m)
     setAmountReceived('')
     setTransferConfirmed(false)
-    setCustomer(null)
+    // Keep any customer already attached to the sale (Review step / debt)
+    setCustomer(activeOrder.customer || customer)
   }
 
   function canComplete() {
@@ -98,6 +101,8 @@ export default function CheckoutModal() {
     if (navigator.vibrate) navigator.vibrate([80, 40, 80])
 
     closeModal()
+    // Return to the dashboard so the (now-consumed) review screen isn't left empty
+    dispatch({ type: 'SET_VIEW', payload: 'home' })
     showToast(t('saleRecordedToast', { amount: money(total) }))
 
     // Auto-show receipt after a brief pause so modal closes cleanly
@@ -114,9 +119,10 @@ export default function CheckoutModal() {
       {/* Sticky header */}
       <div className="co-header">
         <button className="icon-button co-back-btn" onClick={closeModal}>←</button>
-        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>
-          {t('checkout')}{hasMultipleOrders && ` — ${activeOrderLabel}`}
-        </h3>
+        <div className="co-session-title-stack">
+          <h3 className="co-session-title" style={{ margin: 0 }}>{t('checkout')}{hasMultipleOrders ? ` · ${activeOrderLabel}` : ''}</h3>
+          <span className="co-session-subtitle">{activeOrderSub}</span>
+        </div>
       </div>
 
       {/* Order summary */}

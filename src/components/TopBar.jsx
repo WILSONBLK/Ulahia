@@ -10,6 +10,8 @@ const TITLE_KEYS = {
   settings: 'navSettings',
   help: 'navHelp',
   more: 'navMore',
+  logout: 'navLogout',
+  notifications: 'navNotifications',
 }
 
 export default function TopBar() {

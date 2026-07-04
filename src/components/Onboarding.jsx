@@ -73,7 +73,7 @@ const STEPS = [
   {
     type: 'tap',
     view: 'home',
-    target: '.home-sell-btn',
+    target: '.home-sell-circle',
     tapView: 'sell',
     icon: '💰',
     titleKey: 'ob6SellBtnTitle',
@@ -84,7 +84,7 @@ const STEPS = [
   {
     type: 'spot',
     view: 'sell',
-    target: '.pos-search',
+    target: '.pos-search-input',
     icon: '🔍',
     titleKey: 'ob7SearchTitle',
     bodyKey: 'ob7SearchBody',

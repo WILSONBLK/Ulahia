@@ -4,7 +4,7 @@ import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
 import {
   IconReports, IconDebts, IconExpenses,
-  IconSettings, IconHelp, IconPlay, IconChevron,
+  IconSettings, IconHelp, IconPlay, IconLogout, IconChevron,
 } from './icons.jsx'
 
 function Row({ Icon, label, sub, onClick, accent }) {
@@ -53,7 +53,10 @@ export default function More() {
         <Row Icon={IconSettings} label={t('navSettings')} onClick={() => go('settings')} />
         <Row Icon={IconHelp} label={t('navHelp')} onClick={() => go('help')} />
         {activeProfile === 'main' && (
-          <Row Icon={IconPlay} label={t('tryDemoMode')} sub={t('demoModeHint')} onClick={enterDemoTour} />
+          <>
+            <Row Icon={IconLogout} label={t('navLogout')} sub={t('logoutSub')} onClick={() => go('logout')} accent="danger" />
+            <Row Icon={IconPlay} label={t('tryDemoMode')} sub={t('demoModeHint')} onClick={enterDemoTour} />
+          </>
         )}
       </div>
     </div>

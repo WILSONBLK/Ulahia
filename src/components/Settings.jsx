@@ -3,7 +3,14 @@ import { useStore } from '../store.jsx'
 import { useToast } from '../toast.jsx'
 import { useLang } from '../useLang.js'
 import { hashPin } from '../utils.js'
+import { CURRENCIES } from '../currency.js'
 import { getOrCreateCloudMeta, isSupabaseEnabled } from '../sync.js'
+
+const BUSINESS_TYPES = [
+  ['grocery', 'bizGrocery'], ['supermarket', 'bizSupermarket'], ['pharmacy', 'bizPharmacy'],
+  ['restaurant', 'bizRestaurant'], ['fashion', 'bizFashion'], ['electronics', 'bizElectronics'],
+  ['beauty', 'bizBeauty'], ['hardware', 'bizHardware'], ['bar', 'bizBar'], ['other', 'bizOther'],
+]
 
 export default function Settings() {
   const { state, dispatch, activeProfile, switchProfile } = useStore()
@@ -13,6 +20,8 @@ export default function Settings() {
     name: state.shop.name,
     owner: state.shop.owner,
     phone: state.shop.phone,
+    businessType: state.shop.businessType || '',
+    currency: state.shop.currency || 'NGN',
   })
 
   function field(key) {
@@ -65,6 +74,10 @@ export default function Settings() {
     showToast(isDemo ? t('switchedToShop') : t('switchedToDemo'))
   }
 
+  function openLogout() {
+    dispatch({ type: 'SET_VIEW', payload: 'logout' })
+  }
+
   return (
     <div className="screen-content">
       <section className="panel">
@@ -82,7 +95,53 @@ export default function Settings() {
             {t('phoneNumber')}
             <input {...field('phone')} type="tel" placeholder={t('shopPhonePlaceholder')} />
           </label>
+          <label className="label">
+            {t('csBusinessTypeLabel')}
+            <select className="select" value={form.businessType}
+              onChange={e => setForm(f => ({ ...f, businessType: e.target.value }))}>
+              <option value="">{t('csBusinessTypePlaceholder')}</option>
+              {BUSINESS_TYPES.map(([val, key]) => (
+                <option key={val} value={val}>{t(key)}</option>
+              ))}
+            </select>
+          </label>
+          <label className="label">
+            {t('csCurrencyLabel')}
+            <select className="select" value={form.currency}
+              onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>{c.symbol} · {c.name} ({c.code})</option>
+              ))}
+            </select>
+          </label>
           <button className="button" onClick={save}>{t('saveChanges')}</button>
+        </div>
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3 style={{ margin: '0 0 14px' }}>{t('appearanceTitle')}</h3>
+        <div style={{ display: 'grid', gap: 14 }}>
+          <label className="label">
+            {t('laChooseLangTitle')}
+            <select className="select" value={state.language}
+              onChange={e => dispatch({ type: 'SET_LANGUAGE', payload: e.target.value })}>
+              <option value="en">English</option>
+              <option value="pidgin">Nigerian Pidgin</option>
+              <option value="yo">Yorùbá</option>
+              <option value="ig">Igbo</option>
+              <option value="ha">Hausa</option>
+            </select>
+          </label>
+          <label className="settings-toggle-row">
+            <span>{t('darkModeTitle')}</span>
+            <input type="checkbox" className="settings-switch" checked={state.darkMode}
+              onChange={() => dispatch({ type: 'TOGGLE_DARK_MODE' })} />
+          </label>
+          <label className="settings-toggle-row">
+            <span>{t('highContrastTitle')}</span>
+            <input type="checkbox" className="settings-switch" checked={state.highContrast}
+              onChange={() => dispatch({ type: 'TOGGLE_HIGH_CONTRAST' })} />
+          </label>
         </div>
       </section>
 

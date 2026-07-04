@@ -33,11 +33,13 @@ export async function pushState(profileId, recoveryCode, state) {
   // Don't sync ephemeral fields, and don't sync device-local preferences
   // (PIN, appearance, language) — cloud backup covers shop/business data only.
   const { shop, products, transactions, customers, expenses, withdrawals } = state
+  // Product images are stored on-device only — strip them so cloud rows stay small
+  const productsForSync = (products || []).map(({ image, ...rest }) => rest)
   const { error } = await supabase.rpc('sync_push_state', {
     p_shop_id: profileId,
     p_recovery_code: recoveryCode,
     p_shop: shop,
-    p_products: products,
+    p_products: productsForSync,
     p_customers: customers,
     p_sales: transactions,
     p_expenses: expenses,
@@ -52,7 +54,7 @@ export async function pullByCode(code) {
 
   const { data: shop, error: shopError } = await supabase
     .from('shops')
-    .select('id, name, owner, phone, updated_at')
+    .select('id, name, owner, phone, currency, business_type, updated_at')
     .eq('recovery_code', trimmedCode)
     .single()
   if (shopError || !shop) return null
@@ -136,7 +138,13 @@ export async function pullByCode(code) {
     profile_id: shop.id,
     updated_at: shop.updated_at,
     state: {
-      shop: { name: shop.name, owner: shop.owner, phone: shop.phone },
+      shop: {
+        name: shop.name,
+        owner: shop.owner,
+        phone: shop.phone,
+        currency: shop.currency,
+        businessType: shop.business_type || '',
+      },
       products: productsOut,
       transactions,
       customers: customersOut,

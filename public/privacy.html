@@ -9,6 +9,19 @@
   <style>
     body { margin: 0; background: #FAF8F4; color: #1E1F22; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; line-height: 1.65; }
     main { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+    .page-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .back-btn {
+      border: 1px solid #D4D9D1;
+      background: #fff;
+      color: #1E1F22;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .back-btn:hover { border-color: #0F6B63; color: #0F6B63; }
+    .back-btn:focus-visible { outline: 2px solid #0F6B63; outline-offset: 2px; }
     h1 { color: #0F6B63; font-size: 1.7rem; margin: 18px 0 6px; }
     h2 { color: #0F6B63; font-size: 1.1rem; margin: 26px 0 6px; }
     p { margin: 8px 0; }
@@ -20,7 +33,10 @@
 </head>
 <body>
   <main>
-    <div class="brand"><img src="/favicon.svg" alt="" /> Ulahia — Simple Shop Book</div>
+    <div class="page-top">
+      <button id="backButton" class="back-btn" type="button" aria-label="Go back">← Back</button>
+      <div class="brand"><img src="/favicon.svg" alt="" /> Ulahia — Simple Shop Book</div>
+    </div>
     <h1>Privacy Policy</h1>
     <p class="updated">Last updated: 2 July 2026</p>
 
@@ -39,5 +55,17 @@
     <h2>5. Contact</h2>
     <p>Questions about your privacy? Reach us from the Help &amp; Support section in the app.</p>
   </main>
+  <script>
+    const backButton = document.getElementById('backButton')
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        if (window.history.length > 1) {
+          window.history.back()
+          return
+        }
+        window.location.href = '/'
+      })
+    }
+  </script>
 </body>
 </html>

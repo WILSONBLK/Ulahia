@@ -262,7 +262,7 @@ export default function DemoPractice() {
 
       {step === 1 && (
         <TapGuide
-          selector=".home-sell-btn"
+          selector=".home-sell-circle"
           icon="💰"
           title={t('dpStep1Title')}
           body={t('dpStep1Body')}
@@ -272,7 +272,7 @@ export default function DemoPractice() {
 
       {step === 2 && (
         <SpotGuide
-          selector=".pos-search"
+          selector=".pos-search-input"
           icon="🔍"
           title={t('dpStep2Title')}
           body={t('dpStep2Body')}

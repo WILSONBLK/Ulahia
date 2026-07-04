@@ -14,8 +14,11 @@ export function hashPin(pin) {
   return h.toString(16).padStart(8, '0')
 }
 
+import { formatMoney } from './currency.js'
+
+// Formats an amount in the shop's active currency (kept in sync by the store).
 export function money(value) {
-  return 'NGN ' + Number(value || 0).toLocaleString('en-NG')
+  return formatMoney(value)
 }
 
 export function filterByPeriod(records, period, dateField = 'time') {
@@ -33,6 +36,32 @@ export function filterByPeriod(records, period, dateField = 'time') {
     return records.filter(r => new Date(r[dateField]) >= start)
   }
   return records
+}
+
+// Resize an uploaded image to a small square-ish thumbnail and return a compressed
+// JPEG data URL. Keeps product photos tiny so on-device storage stays lean.
+export function resizeImage(file, maxDim = 160, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type?.startsWith('image/')) { reject(new Error('not-image')); return }
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('read-failed'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('decode-failed'))
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 export function speak(text) {
