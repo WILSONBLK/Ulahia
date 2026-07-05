@@ -6,6 +6,7 @@ import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
 import CustomerSearch from './CustomerSearch.jsx'
 import ReceiptModal from './ReceiptModal.jsx'
+import { IconCash, IconTransfer, IconDebts } from './icons.jsx'
 
 export default function CheckoutModal() {
   const { state, dispatch } = useStore()
@@ -182,13 +183,13 @@ export default function CheckoutModal() {
         <div className="co-label">{t('paymentMethod')}</div>
         <div className="co-mode-toggle co-mode-toggle--3">
           <button className={`co-mode-btn${mode === 'cash' ? ' is-active' : ''}`} onClick={() => switchMode('cash')}>
-            <span className="co-mode-icon">💵</span>{t('cash')}
+            <span className="co-mode-icon"><IconCash size={22} /></span>{t('cash')}
           </button>
           <button className={`co-mode-btn${mode === 'transfer' ? ' is-active' : ''}`} onClick={() => switchMode('transfer')}>
-            <span className="co-mode-icon">📱</span>{t('transfer')}
+            <span className="co-mode-icon"><IconTransfer size={22} /></span>{t('transfer')}
           </button>
           <button className={`co-mode-btn${mode === 'debt' ? ' is-active' : ''}`} onClick={() => switchMode('debt')}>
-            <span className="co-mode-icon">📋</span>{t('debt')}
+            <span className="co-mode-icon"><IconDebts size={22} /></span>{t('debt')}
           </button>
         </div>
       </div>
