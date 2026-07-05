@@ -6048,3 +6048,26 @@ body { font-size: 1rem; }
   font-size: 0.9rem;
   white-space: nowrap;
 }
+
+/* Help screen: compact preview of the Home SELL circle */
+.help-sell-circle-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 84px;
+  height: 84px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 0.72rem;
+  box-shadow: 0 8px 18px rgba(15, 107, 99, 0.3);
+  pointer-events: none;
+}
+
+/* Pills that contain inline icons align them with the text */
+.pill svg { vertical-align: -2px; }
