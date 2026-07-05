@@ -996,6 +996,19 @@ function reducer(state, action) {
     case 'RESTORE_PRODUCT':
       return { ...state, products: [action.payload, ...state.products] }
 
+    case 'ADD_CUSTOMER': {
+      const { name, phone } = action.payload
+      const customer = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        phone: (phone || '').trim(),
+        totalBalance: 0,
+        transactions: [],
+        payments: [],
+      }
+      return { ...state, customers: [customer, ...state.customers] }
+    }
+
     case 'ADD_EXPENSE': {
       const { category, amount, note } = action.payload
       const expense = {

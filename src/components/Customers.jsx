@@ -4,7 +4,44 @@ import { useLang } from '../useLang.js'
 import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
-import { IconChat } from './icons.jsx'
+import { IconChat, IconSearch, IconUserPlus } from './icons.jsx'
+
+function AddCustomerModal() {
+  const { dispatch } = useStore()
+  const { closeModal } = useModal()
+  const showToast = useToast()
+  const t = useLang()
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+
+  function submit(e) {
+    e?.preventDefault()
+    if (!name.trim()) return
+    dispatch({ type: 'ADD_CUSTOMER', payload: { name, phone } })
+    showToast(t('customerAddedToast', { name: name.trim() }))
+    closeModal()
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <h3 style={{ margin: '0 0 14px' }}>{t('rsAddCustomer')}</h3>
+      <div style={{ display: 'grid', gap: 12 }}>
+        <label className="label">
+          {t('customerName')}
+          <input className="field" value={name} onChange={e => setName(e.target.value)} placeholder={t('laFullNamePlaceholder')} autoFocus required />
+        </label>
+        <label className="label">
+          {t('phone')} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>({t('optional')})</span>
+          <input className="field" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('phonePlaceholder')} />
+        </label>
+        <div className="row">
+          <button className="button" type="submit" disabled={!name.trim()} style={{ opacity: name.trim() ? 1 : 0.5 }}>{t('rsAddCustomer')}</button>
+          <button className="button light" type="button" onClick={closeModal}>{t('cancel')}</button>
+        </div>
+      </div>
+    </form>
+  )
+}
 
 function PaymentModal({ customer }) {
   const { dispatch } = useStore()
@@ -72,12 +109,18 @@ export default function Customers() {
   const t = useLang()
   const { openModal } = useModal()
   const [search, setSearch] = useState('')
-  const [tab, setTab] = useState('owing')
+  const [tab, setTab] = useState('all')
 
   const totalDebt = state.customers.reduce((sum, c) => sum + c.totalBalance, 0)
+  const owingCount = state.customers.filter(c => c.totalBalance > 0).length
+  const clearCount = state.customers.length - owingCount
 
   const filtered = state.customers
-    .filter(c => tab === 'owing' ? c.totalBalance > 0 : c.totalBalance === 0)
+    .filter(c =>
+      tab === 'all' ? true :
+      tab === 'owing' ? c.totalBalance > 0 :
+      c.totalBalance === 0
+    )
     .filter(c =>
       !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -96,27 +139,43 @@ export default function Customers() {
         </div>
       </div>
 
-      <div className="segmented-tabs">
-        <button className={`segmented-tab${tab === 'owing' ? ' is-active' : ''}`} onClick={() => setTab('owing')}>
-          {t('allDebts')} ({state.customers.filter(c => c.totalBalance > 0).length})
-        </button>
-        <button className={`segmented-tab${tab === 'cleared' ? ' is-active' : ''}`} onClick={() => setTab('cleared')}>
-          {t('clearedDebts')} ({state.customers.filter(c => c.totalBalance === 0).length})
+      <div className="prod-toolbar" style={{ marginBottom: 12 }}>
+        <span className="pos-search-field">
+          <span className="pos-search-icon"><IconSearch size={19} /></span>
+          <input
+            className="pos-search-input"
+            placeholder={`${t('search')}...`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoComplete="off"
+          />
+        </span>
+        <button
+          className="prod-tool-btn prod-tool-btn--primary"
+          aria-label={t('rsAddCustomer')}
+          title={t('rsAddCustomer')}
+          onClick={() => openModal(<AddCustomerModal />)}
+        >
+          <IconUserPlus size={20} />
         </button>
       </div>
 
-      <input
-        className="field"
-        placeholder={`🔍  ${t('search')}...`}
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{ marginBottom: 14 }}
-      />
+      <div className="seg-tabs">
+        <button className={`seg-tab${tab === 'all' ? ' is-active' : ''}`} onClick={() => setTab('all')}>
+          {t('custAll')} ({state.customers.length})
+        </button>
+        <button className={`seg-tab${tab === 'owing' ? ' is-active' : ''}`} onClick={() => setTab('owing')}>
+          {t('custWithDebt')} ({owingCount})
+        </button>
+        <button className={`seg-tab${tab === 'cleared' ? ' is-active' : ''}`} onClick={() => setTab('cleared')}>
+          {t('custNoDebt')} ({clearCount})
+        </button>
+      </div>
 
       <div className="list">
         {!filtered.length ? (
           <div className="empty">
-            {tab === 'owing' ? t('noDebt') : t('noClearedYet')}
+            {tab === 'all' ? t('cpNoCustomers') : tab === 'owing' ? t('noDebt') : t('noClearedYet')}
           </div>
         ) : (
           filtered.map(c => (
