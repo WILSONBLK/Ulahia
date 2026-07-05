@@ -11,7 +11,7 @@ import ProductForm from './ProductForm.jsx'
 import OrderTabs from './OrderTabs.jsx'
 import CustomerPicker from './CustomerPicker.jsx'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
-import { IconUserPlus, IconSearch, IconBox, IconX } from './icons.jsx'
+import { IconUserPlus, IconSearch, IconBox, IconX, IconStar, IconStarFilled } from './icons.jsx'
 
 // Small product thumbnail — real image, else a colored initial tile
 function Thumb({ product }) {
@@ -190,7 +190,7 @@ export default function POSScreen() {
 
           return (
             <div key={product.id} className="pos-product-block">
-              {showPinnedDivider && <div className="pos-pinned-divider">⭐ {t('pinnedProductsHeader')}</div>}
+              {showPinnedDivider && <div className="pos-pinned-divider"><IconStarFilled size={14} /> {t('pinnedProductsHeader')}</div>}
               {showOthersDivider && hasPinned && (
                 <div className="pos-pinned-divider" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>{t('allProductsHeader')}</div>
               )}
@@ -201,7 +201,7 @@ export default function POSScreen() {
                   onClick={() => togglePin(product.id)}
                   title={isPinned ? t('unpinTitle') : t('pinToTopTitle')}
                 >
-                  {isPinned ? '⭐' : '☆'}
+                  {isPinned ? <IconStarFilled size={19} /> : <IconStar size={19} />}
                 </button>
 
                 <Thumb product={product} />

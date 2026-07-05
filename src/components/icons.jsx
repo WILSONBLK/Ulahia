@@ -178,6 +178,18 @@ export const IconUserPlus = (p) => (
   </Icon>
 )
 
+export const IconStar = (p) => (
+  <Icon {...p}>
+    <path d="M12 3.6l2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.2 6.9 19l1.1-5.6L3.8 9.5l5.7-.7L12 3.6Z" />
+  </Icon>
+)
+
+export const IconStarFilled = (p) => (
+  <Icon {...p}>
+    <path d="M12 3.6l2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.2 6.9 19l1.1-5.6L3.8 9.5l5.7-.7L12 3.6Z" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
 export const IconTrash = (p) => (
   <Icon {...p}>
     <path d="M5 7h14" />

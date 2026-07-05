@@ -5965,3 +5965,37 @@ body { font-size: 1rem; }
 .setup-form {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* ══════════════════════════════════════
+   TOUCH FEEDBACK — pressed states for tappable rows
+══════════════════════════════════════ */
+.txn-row-button:active,
+.home-open-row:active,
+.home-recent-row:active,
+.review-cust-card:active,
+.review-cust-empty:active,
+.review-disc-row:active,
+.notif-row:active,
+.help-row:active,
+.settings-row:active {
+  background: #F3F1EC;
+}
+.app--dark .txn-row-button:active,
+.app--dark .home-open-row:active,
+.app--dark .home-recent-row:active,
+.app--dark .review-cust-card:active,
+.app--dark .review-cust-empty:active,
+.app--dark .review-disc-row:active,
+.app--dark .notif-row:active,
+.app--dark .help-row:active,
+.app--dark .settings-row:active {
+  background: #262D30;
+}
+
+/* Pinned star keeps its amber identity in dark mode (re-assert after the
+   consolidated dark surface block) */
+.app--dark .pos-pin-btn.is-pinned {
+  color: #F5A524;
+  background: rgba(245, 165, 36, 0.14);
+  border-color: rgba(245, 165, 36, 0.45);
+}
