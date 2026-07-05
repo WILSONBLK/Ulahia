@@ -5999,3 +5999,34 @@ body { font-size: 1rem; }
   background: rgba(245, 165, 36, 0.14);
   border-color: rgba(245, 165, 36, 0.45);
 }
+
+/* First-run nudge on Home (empty shop) */
+.home-firstrun {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 16px;
+  padding: 14px 16px;
+  background: #E3EFED;
+  border: 1.5px dashed rgba(15, 107, 99, 0.4);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-align: left;
+}
+.home-firstrun:active { background: #D6E8E4; }
+.home-firstrun-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--green);
+  color: #fff;
+}
+.home-firstrun-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.35; }
+.home-firstrun-text strong { font-family: var(--font-head); }
+.home-firstrun-text span { color: var(--muted); font-size: 0.85rem; }
+.home-firstrun > svg { color: var(--muted); flex-shrink: 0; }
+.app--dark .home-firstrun { background: rgba(23, 138, 128, 0.14); border-color: rgba(47, 191, 175, 0.4); }
+.app--dark .home-firstrun:active { background: rgba(23, 138, 128, 0.22); }

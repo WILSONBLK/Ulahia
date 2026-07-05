@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { useLang } from './useLang.js'
 
 const ToastContext = createContext(null)
 
 export function ToastProvider({ children }) {
+  const t = useLang()
   const [msg, setMsg] = useState('')
   const [visible, setVisible] = useState(false)
   const [undoFn, setUndoFn] = useState(null)
@@ -25,10 +27,10 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={showToast}>
       {children}
-      <div className={`toast${visible ? ' is-visible' : ''}`}>
+      <div className={`toast${visible ? ' is-visible' : ''}`} role="status" aria-live="polite">
         <span>{msg}</span>
         {undoFn && (
-          <button className="toast-undo-btn" onClick={handleUndo}>Undo</button>
+          <button className="toast-undo-btn" onClick={handleUndo}>{t('undoBtn')}</button>
         )}
       </div>
     </ToastContext.Provider>

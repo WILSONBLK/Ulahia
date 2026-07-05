@@ -8,7 +8,7 @@ import { LogoLockup } from './Logo.jsx'
 import { useLang } from '../useLang.js'
 import {
   IconMenu, IconBell, IconStore, IconChevronDown, IconChevron,
-  IconCart, IconCheck, IconPlus,
+  IconCart, IconCheck, IconPlus, IconBox,
 } from './icons.jsx'
 
 // Close-of-day summary — end-of-day reconciliation (cash / transfer / credit)
@@ -185,6 +185,18 @@ export default function Home() {
           <span className="home-sell-circle-sub">{t('dashStartNewSale')}</span>
         </button>
       </div>
+
+      {/* First-run nudge — brand-new shop with no products yet */}
+      {state.products.length === 0 && (
+        <button className="home-firstrun" onClick={() => go('products')}>
+          <span className="home-firstrun-icon"><IconBox size={22} /></span>
+          <span className="home-firstrun-text">
+            <strong>{t('homeFirstProductTitle')}</strong>
+            <span>{t('homeFirstProductSub')}</span>
+          </span>
+          <IconChevron size={18} />
+        </button>
+      )}
 
       {/* Open Sales */}
       {openOrders.length > 0 && (
