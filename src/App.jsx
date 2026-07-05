@@ -9,6 +9,7 @@ import Home from './components/Home.jsx'
 import POSScreen from './components/POSScreen.jsx'
 import ReviewSale from './components/ReviewSale.jsx'
 import Customers from './components/Customers.jsx'
+import CustomerProfile from './components/CustomerProfile.jsx'
 import Products from './components/Products.jsx'
 import Reports from './components/Reports.jsx'
 import Expenses from './components/Expenses.jsx'
@@ -28,6 +29,7 @@ const VIEWS = {
   sell: POSScreen,
   review: ReviewSale,
   customers: Customers,
+  customer: CustomerProfile,
   debts: Customers,
   products: Products,
   reports: Reports,

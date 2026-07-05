@@ -6284,3 +6284,114 @@ body { font-size: 1rem; }
 .app--dark .prod-thumb--purple { background: rgba(109,79,194,.22); }
 .app--dark .prod-thumb--blue   { background: rgba(55,87,201,.22); }
 .app--dark .prod-thumb--pink   { background: rgba(180,67,123,.22); }
+
+/* ══════════════════════════════════════
+   CUSTOMER PROFILE (approved mockup)
+══════════════════════════════════════ */
+.cust-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: var(--ink);
+}
+
+.cpr-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cpr-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #E3EFED;
+  color: var(--green);
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.cpr-head-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.cpr-head-info strong {
+  font-size: 1.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cpr-head-info span { color: var(--muted); font-size: 0.88rem; }
+
+.cpr-debt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1.25;
+}
+
+.cpr-debt span { color: var(--muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+.cpr-debt strong { color: var(--terracotta); font-size: 1.05rem; }
+
+.cpr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cpr-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.cpr-stat span { color: var(--muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }
+.cpr-stat strong { font-size: clamp(0.9rem, 3.8vw, 1.05rem); overflow-wrap: anywhere; }
+.cpr-stat-date { font-size: 0.88rem !important; }
+
+.cpr-viewall {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+}
+
+.cpr-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cpr-action {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.app--dark .cpr-avatar { background: rgba(23, 138, 128, 0.18); }
+.app--dark .cpr-stat { background: var(--panel); border-color: var(--line); }

@@ -43,7 +43,7 @@ function AddCustomerModal() {
   )
 }
 
-function PaymentModal({ customer }) {
+export function PaymentModal({ customer }) {
   const { dispatch } = useStore()
   const { closeModal } = useModal()
   const showToast = useToast()
@@ -105,7 +105,7 @@ function PaymentModal({ customer }) {
 }
 
 export default function Customers() {
-  const { state } = useStore()
+  const { state, dispatch } = useStore()
   const t = useLang()
   const { openModal } = useModal()
   const [search, setSearch] = useState('')
@@ -180,16 +180,18 @@ export default function Customers() {
         ) : (
           filtered.map(c => (
             <div key={c.id} className="cust-card">
-              <div className="cust-avatar">{c.name[0].toUpperCase()}</div>
-              <div className="cust-info">
-                <strong>{c.name}</strong>
-                <span>{c.phone || t('noPhone')}</span>
-                {c.payments.length > 0 && (
-                  <span className="cust-last-pay">
-                    {t('lastPaid')} {money(c.payments[0].amount)} · {new Date(c.payments[0].time).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
+              <button className="cust-open" onClick={() => dispatch({ type: 'OPEN_CUSTOMER', payload: c.id })}>
+                <div className="cust-avatar">{c.name[0].toUpperCase()}</div>
+                <div className="cust-info">
+                  <strong>{c.name}</strong>
+                  <span>{c.phone || t('noPhone')}</span>
+                  {c.payments.length > 0 && (
+                    <span className="cust-last-pay">
+                      {t('lastPaid')} {money(c.payments[0].amount)} · {new Date(c.payments[0].time).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </button>
               <div className="cust-right">
                 <strong className={c.totalBalance > 0 ? 'amount bad' : 'amount good'}>
                   {c.totalBalance > 0 ? money(c.totalBalance) : `✓ ${t('clearedBadge')}`}

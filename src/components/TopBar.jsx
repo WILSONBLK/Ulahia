@@ -3,6 +3,7 @@ import { useLang } from '../useLang.js'
 
 const TITLE_KEYS = {
   customers: 'navCustomers',
+  customer: 'navCustomers',
   debts: 'navDebts',
   products: 'navProducts',
   reports: 'navReports',

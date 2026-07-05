@@ -716,6 +716,9 @@ function reducer(state, action) {
     case 'SET_VIEW':
       return { ...state, view: action.payload }
 
+    case 'OPEN_CUSTOMER':
+      return { ...state, view: 'customer', selectedCustomerId: action.payload }
+
     case 'SET_LOGGED_OUT':
       return { ...state, loggedOut: action.payload }
 

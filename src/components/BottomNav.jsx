@@ -21,6 +21,7 @@ export default function BottomNav() {
 
   const active =
     state.view === 'debts' ? 'customers' :
+    state.view === 'customer' ? 'customers' :
     state.view === 'bulk-restock' ? 'products' :
     state.view === 'review' ? 'sell' :
     MORE_VIEWS.includes(state.view) ? 'more' :
