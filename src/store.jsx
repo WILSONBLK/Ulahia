@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useState } from 'react'
+import { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react'
 import { getOrCreateCloudMeta, pushState } from './sync.js'
 import { TOUR_SEEN_KEY } from './utils.js'
 import { setActiveCurrency, DEFAULT_CURRENCY } from './currency.js'
@@ -1059,9 +1059,35 @@ export function StoreProvider({ children }) {
     return loaded
   })
 
+  // Persist locally, debounced — serializing the full state (incl. product
+  // image data) on every dispatch causes jank on low-end phones. A flush on
+  // page-hide guarantees nothing is lost when the app is closed mid-debounce.
+  const persistTimer = useRef(null)
+  const latestRef = useRef({ state, activeProfile })
+  latestRef.current = { state, activeProfile }
+
   useEffect(() => {
-    localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
+    clearTimeout(persistTimer.current)
+    persistTimer.current = setTimeout(() => {
+      localStorage.setItem(profileKey(activeProfile), JSON.stringify(state))
+    }, 350)
   }, [state, activeProfile])
+
+  useEffect(() => {
+    const flush = () => {
+      clearTimeout(persistTimer.current)
+      const { state: s, activeProfile: p } = latestRef.current
+      localStorage.setItem(profileKey(p), JSON.stringify(s))
+    }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      flush()
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [])
 
   // Keep money formatting in sync across profile switches / cloud restores
   useEffect(() => {
