@@ -118,6 +118,10 @@ button {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Resolve theme tokens INSIDE the .app scope — `.app--dark body` can never
+     match (body is an ancestor), so inherited text/bg must be set here */
+  color: var(--ink);
+  background: var(--bg);
 }
 
 /* Fullscreen + list screens fill the space left after any banner and scroll
@@ -264,11 +268,40 @@ button {
   box-shadow: 0 8px 18px rgba(194, 78, 42, 0.18);
 }
 
+.button.danger {
+  color: white;
+  background: var(--red);
+  box-shadow: 0 8px 18px rgba(229, 72, 77, 0.18);
+}
+
 .button.light {
   color: var(--ink);
   background: white;
   border: 1px solid var(--line);
   box-shadow: none;
+}
+
+/* Global interactive consistency */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(15, 107, 99, 0.28);
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.button:disabled {
+  box-shadow: none;
+  transform: none;
 }
 
 .icon-button {
@@ -284,7 +317,7 @@ button {
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   width: min(1220px, 100%);
   margin: 0 auto;
@@ -694,6 +727,9 @@ button {
 }
 
 .empty {
+  display: grid;
+  place-items: center;
+  min-height: 96px;
   padding: 22px;
   color: var(--muted);
   background: #F7F5F1;
@@ -817,19 +853,6 @@ button {
 }
 
 @media (max-width: 560px) {
-  .topbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .top-actions {
-    width: 100%;
-  }
-
-  .top-actions .select {
-    flex: 1;
-  }
-
   .hero {
     padding: 18px;
   }
@@ -1047,7 +1070,23 @@ button {
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.txn-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.txn-right .pill {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── POS layout overrides ── */
@@ -2128,7 +2167,24 @@ button {
 ══════════════════════════════════════ */
 .screen-content {
   display: grid;
+  /* minmax(0,1fr): an implicit `auto` track would size to the widest child's
+     max-content and overflow the screen on phones */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
+}
+
+/* Keep all inner screens on a shared vertical rhythm */
+.screen-content > .panel,
+.screen-content > .section,
+.screen-content > .report-periods,
+.screen-content > .report-grid,
+.screen-content > .notif-list,
+.screen-content > .empty {
+  margin: 0;
+}
+
+.screen-content > * + * {
+  margin-top: 16px;
 }
 
 .screen-top-actions {
@@ -2665,16 +2721,22 @@ button {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  min-width: 0;
 }
 
 .period-tab {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 40px;
+  padding: 0 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: clamp(0.72rem, 3vw, 0.88rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
   transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
@@ -2685,9 +2747,42 @@ button {
   border-color: var(--green);
 }
 
+.period-tab:focus-visible {
+  border-color: var(--green);
+}
+
+/* Reusable segmented tabs for debt and filter-style toggles */
+.seg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.seg-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: clamp(0.74rem, 3vw, 0.9rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seg-tab.is-active {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+
 .report-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -2697,6 +2792,13 @@ button {
   background: white;
   border: 1px solid var(--line);
   border-radius: 12px;
+  min-width: 0;
+}
+
+.report-card strong {
+  display: block;
+  font-size: clamp(0.98rem, 4.2vw, 1.15rem);
+  overflow-wrap: anywhere;
 }
 
 .report-card span {
@@ -2799,7 +2901,23 @@ button {
   transition: background 0.1s;
 }
 
+.txn-row--tap:hover {
+  background: #F7F5F1;
+}
+
 .txn-row--tap:active { background: var(--bg); }
+
+.txn-row-button {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  text-align: left;
+  font: inherit;
+}
+
+.txn-row-button .txn-right {
+  margin-left: auto;
+}
 
 /* Transfer pill */
 .pill.blue-pill {
@@ -3849,6 +3967,25 @@ button {
   font-size: clamp(0.84rem, 3vw, 0.88rem);
   color: #7c5c00;
   margin: 0;
+}
+
+.la-note--danger {
+  background: #fff1f0;
+  border-color: #ffc9c9;
+  color: #7d1a1a;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.la-confirm-row {
+  display: flex;
+  gap: 10px;
+}
+
+.la-confirm-row .button {
+  flex: 1;
+  min-height: 44px;
 }
 
 /* Recovery code input — large monospace */
@@ -5609,3 +5746,222 @@ body { font-size: 1rem; }
 .app--dark .review-actions { background: #1E2426; border-color: var(--line); }
 .app--dark .pos-thumb { background: rgba(23,138,128,0.18); }
 .app--dark .review-disc-editor { background: #181D1F; }
+
+/* ══════════════════════════════════════
+   CUSTOMER PICKER (attach to sale)
+══════════════════════════════════════ */
+.cp { display: flex; flex-direction: column; max-height: 78dvh; }
+.cp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cp-head h3 { margin: 0; font-size: 1.2rem; }
+.cp-close {
+  width: 38px; height: 38px;
+  color: var(--muted);
+}
+.cp-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.cp-search:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(15, 107, 99, 0.12);
+}
+.cp-search-icon { display: grid; place-items: center; color: var(--muted); flex-shrink: 0; }
+.cp-search-input {
+  flex: 1; min-width: 0; width: 0;
+  border: 0; background: transparent; color: var(--ink);
+  font-size: 1rem;
+}
+.cp-search-input:focus { outline: none; }
+
+.cp-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 10px -4px 0;
+  padding: 0 4px;
+}
+.cp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 8px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: var(--ink);
+  transition: background 0.12s;
+}
+.cp-row + .cp-row { border-top: 1px solid var(--line); }
+.cp-row:active { background: #F3F1EC; }
+.app--dark .cp-row:active { background: #262D30; }
+.cp-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #E3EFED;
+  color: var(--green);
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.cp-avatar--new { background: rgba(15,107,99,0.12); }
+.cp-row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.3; }
+.cp-row-text strong { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-row-text span { color: var(--muted); font-size: 0.85rem; }
+.cp-owed { flex-shrink: 0; font-size: 0.78rem; }
+
+.cp-new {
+  padding: 6px 0 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.cp-row--new { border: 1.5px dashed var(--line); border-radius: var(--radius-sm); }
+.cp-row--new:active { background: rgba(15,107,99,0.06); }
+.cp-phone { margin-top: 8px; }
+
+.cp-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.cp-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--red);
+  font-weight: 700;
+}
+.cp-remove:active { background: rgba(229,72,77,0.08); }
+
+/* Attached-customer chip on New Sale */
+.pos-customer-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 14px 8px;
+  padding: 8px 12px;
+  background: #E3EFED;
+  border: 1px solid #CFE4E0;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  text-align: left;
+}
+.app--dark .pos-customer-chip { background: rgba(23,138,128,0.16); border-color: transparent; }
+.pos-customer-chip-avatar {
+  display: grid; place-items: center;
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--green); color: #fff;
+  font-family: var(--font-head); font-weight: 800; font-size: 0.9rem;
+}
+.pos-customer-chip-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.25; }
+.pos-customer-chip-text strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pos-customer-chip-text span { color: var(--green); font-size: 0.78rem; font-weight: 700; }
+.pos-customer-chip > svg { color: var(--muted); flex-shrink: 0; }
+
+/* ══════════════════════════════════════
+   DARK MODE — consolidated surface fixes
+   (components that hardcoded white)
+══════════════════════════════════════ */
+.app--dark .topbar-back,
+.app--dark .icon-button,
+.app--dark .pos-back-btn,
+.app--dark .pos-clear-btn,
+.app--dark .qty-btn,
+.app--dark .theme-btn,
+.app--dark .period-tab,
+.app--dark .seg-tab,
+.app--dark .pingate-tab,
+.app--dark .type-option,
+.app--dark .flex-cancel-btn,
+.app--dark .flex-remove-btn,
+.app--dark .pos-pin-btn,
+.app--dark .mini-card,
+.app--dark .flex-prod-card,
+.app--dark .flex-report-card,
+.app--dark .txn-row-button,
+.app--dark .bulk-footer,
+.app--dark .bulk-input,
+.app--dark .pingate-card,
+.app--dark .cs-dropdown,
+.app--dark .cs-option,
+.app--dark .co-header {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+/* Outline-style buttons: dark surface but keep their accent identity */
+.app--dark .pos-add-btn:not(:disabled),
+.app--dark .co-mode-btn:not(.is-active),
+.app--dark .co-discount-btn:not(.is-active),
+.app--dark .co-transfer-btn:not(.is-selected) {
+  background: var(--panel);
+}
+
+/* Re-assert selected states (this block is appended last) */
+.app--dark .period-tab.is-active,
+.app--dark .seg-tab.is-active {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+.app--dark .cs-option:active { background: #262D30; }
+
+/* ══════════════════════════════════════
+   ACCESSIBILITY — reduced motion
+══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   GRID TRACK GUARDS
+   Single-column grids default to an `auto` track that sizes to the widest
+   child's max-content and overflows small screens. Constrain them all.
+══════════════════════════════════════ */
+.list,
+.onboarding,
+.card,
+.co-cash-summary,
+.cs-option-info,
+.cust-info,
+.expense-info,
+.flex-report-card,
+.flex-report-list,
+.prod-info,
+.setup-form {
+  grid-template-columns: minmax(0, 1fr);
+}

@@ -135,7 +135,7 @@ const STEPS = [
   // 12 — TAP: Products tab in bottom nav
   {
     type: 'tap',
-    target: '.tabs-mobile button:nth-child(3)',
+    target: '.tabs-mobile button:nth-child(2)',
     tapView: 'products',
     icon: '📦',
     titleKey: 'ob12GoProductsTitle',
@@ -188,7 +188,7 @@ const STEPS = [
   {
     type: 'tap',
     target: '.tabs-mobile button:nth-child(5)',
-    tapView: 'reports',
+    tapView: 'more',
     icon: '📊',
     titleKey: 'ob17GoReportsTitle',
     bodyKey: 'ob17GoReportsBody',
@@ -196,9 +196,10 @@ const STEPS = [
 
   // 18 — Reports: Period tabs
   {
-    type: 'spot',
-    view: 'reports',
-    target: '.report-periods',
+    type: 'tap',
+    view: 'more',
+    target: '.more-row[data-tour="more-reports"]',
+    tapView: 'reports',
     icon: '📊',
     titleKey: 'ob18ReportPeriodsTitle',
     bodyKey: 'ob18ReportPeriodsBody',
@@ -207,7 +208,8 @@ const STEPS = [
   // 19 — TAP: Settings tab in bottom nav
   {
     type: 'tap',
-    target: '.tabs-mobile button:nth-child(6)',
+    view: 'more',
+    target: '.more-row[data-tour="more-settings"]',
     tapView: 'settings',
     icon: '⚙️',
     titleKey: 'ob19GoSettingsTitle',

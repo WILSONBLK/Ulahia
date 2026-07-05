@@ -30,6 +30,7 @@ export default function BottomNav() {
     <nav className="tabs-mobile">
       {TABS.map(({ view, Icon, key, center }) => (
         <button
+          type="button"
           key={view}
           className={[
             center ? 'nav-sell' : '',
@@ -37,6 +38,7 @@ export default function BottomNav() {
           ].filter(Boolean).join(' ')}
           onClick={() => dispatch({ type: 'SET_VIEW', payload: view })}
           aria-label={t(key)}
+          aria-current={active === view ? 'page' : undefined}
         >
           <span className="nav-icon-wrap">
             <Icon size={center ? 26 : 22} />

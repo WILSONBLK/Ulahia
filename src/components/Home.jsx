@@ -17,8 +17,8 @@ function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
   const t = useLang()
   return (
     <div className="cod-modal">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button className="icon-button" onClick={closeModal}>←</button>
+      <div className="cod-head">
+        <button type="button" className="icon-button" onClick={closeModal}>←</button>
         <h3 className="cod-title">{t('todaysSummary')}</h3>
       </div>
       <div className="cod-grid">
@@ -28,13 +28,13 @@ function CloseOfDayModal({ stats, todayCash, todayTransfer, todayDebt }) {
         <div className="cod-card"><span>{t('cashReceivedLabel')}</span><strong>{money(todayCash)}</strong></div>
         <div className="cod-card"><span>{t('transfersLabel')}</span><strong>{money(todayTransfer)}</strong></div>
         {todayDebt > 0 && (
-          <div className="cod-card" style={{ borderColor: '#ffc9c9', background: '#fff5f5' }}>
-            <span style={{ color: 'var(--red)' }}>{t('creditGiven')}</span>
-            <strong style={{ color: 'var(--red)' }}>{money(todayDebt)}</strong>
+          <div className="cod-card cod-card--debt">
+            <span>{t('creditGiven')}</span>
+            <strong>{money(todayDebt)}</strong>
           </div>
         )}
       </div>
-      <button className="button" style={{ width: '100%' }} onClick={closeModal}>{t('doneBtn')}</button>
+      <button type="button" className="button cod-done-btn" onClick={closeModal}>{t('doneBtn')}</button>
     </div>
   )
 }
@@ -57,7 +57,7 @@ function AddStoreModal() {
           onChange={e => setName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { addStore(name); closeModal() } }} />
       </label>
-      <div className="row" style={{ marginTop: 14 }}>
+      <div className="row store-modal-actions">
         <button className="button" disabled={!name.trim()}
           style={{ opacity: name.trim() ? 1 : 0.5 }}
           onClick={() => { addStore(name); closeModal() }}>

@@ -65,7 +65,7 @@ export default function Reports() {
         <div className="report-card report-card--sales">
           <span>{t('sales')}</span>
           <strong>{money(totalSales)}</strong>
-          {flexRevenue > 0 && <small style={{ color: 'var(--muted)' }}>{t('inclFlexible', { amount: money(flexRevenue) })}</small>}
+          {flexRevenue > 0 && <small className="report-muted-note">{t('inclFlexible', { amount: money(flexRevenue) })}</small>}
         </div>
         <div className="report-card report-card--profit">
           <span>{t('profit')}</span>
@@ -137,7 +137,7 @@ export default function Reports() {
                 <div className="txn-info">
                   <strong className="txn-items">
                     {txn.items.map(i =>
-                      i.type === 'flexible' ? `${i.name} ₦${i.price.toLocaleString()}` : `${i.name} ×${i.qty}`
+                      i.type === 'flexible' ? `${i.name} ${money(i.price * i.qty)}` : `${i.name} ×${i.qty}`
                     ).join(', ')}
                   </strong>
                   <span className="txn-meta">
@@ -151,7 +151,7 @@ export default function Reports() {
                 </div>
                 <div className="txn-right">
                   <strong>{money(txn.total)}</strong>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  <div className="txn-pill-row">
                     <span className={`pill ${txn.mode === 'debt' ? 'warn' : txn.mode === 'transfer' ? 'blue-pill' : ''}`}>
                       {txn.mode === 'cash' ? t('cash') : txn.mode === 'transfer' ? t('transfer') : t('debt')}
                     </span>

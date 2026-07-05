@@ -21,14 +21,16 @@ export default function TopBar() {
   return (
     <header className="topbar">
       <button
+        type="button"
         className="topbar-back"
         onClick={() => dispatch({ type: 'SET_VIEW', payload: 'home' })}
+        aria-label={t('dashboard')}
       >
         ←
       </button>
-      <strong className="topbar-title">{TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''}</strong>
+      <strong className="topbar-title" title={TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''}>{TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''}</strong>
       <select
-        className="select"
+        className="select topbar-lang"
         aria-label="Language"
         value={state.language}
         onChange={e => dispatch({ type: 'SET_LANGUAGE', payload: e.target.value })}

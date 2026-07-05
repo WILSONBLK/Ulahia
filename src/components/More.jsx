@@ -7,9 +7,9 @@ import {
   IconSettings, IconHelp, IconPlay, IconLogout, IconChevron,
 } from './icons.jsx'
 
-function Row({ Icon, label, sub, onClick, accent }) {
+function Row({ Icon, label, sub, onClick, accent, tour }) {
   return (
-    <button className="more-row" onClick={onClick}>
+    <button className="more-row" onClick={onClick} data-tour={tour}>
       <span className={`more-row-icon${accent ? ` more-row-icon--${accent}` : ''}`}><Icon /></span>
       <span className="more-row-text">
         <span className="more-row-label">{label}</span>
@@ -38,7 +38,7 @@ export default function More() {
       </div>
 
       <div className="more-group">
-        <Row Icon={IconReports} label={t('navReports')} sub={t('reportsSub')} onClick={() => go('reports')} />
+        <Row Icon={IconReports} label={t('navReports')} sub={t('reportsSub')} onClick={() => go('reports')} tour="more-reports" />
         <Row
           Icon={IconDebts}
           label={t('navDebts')}
@@ -50,7 +50,7 @@ export default function More() {
       </div>
 
       <div className="more-group">
-        <Row Icon={IconSettings} label={t('navSettings')} onClick={() => go('settings')} />
+        <Row Icon={IconSettings} label={t('navSettings')} onClick={() => go('settings')} tour="more-settings" />
         <Row Icon={IconHelp} label={t('navHelp')} onClick={() => go('help')} />
         {activeProfile === 'main' && (
           <>

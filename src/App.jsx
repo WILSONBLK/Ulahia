@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from './store.jsx'
 import { useOnline } from './useOnline.js'
 import { useLang } from './useLang.js'
@@ -47,6 +47,13 @@ export default function App() {
   const online = useOnline()
   const t = useLang()
   const [, bumpLock] = useState(0)
+
+  // Mirror theme classes onto <body> so portalled UI (modals, toasts, PIN gate)
+  // rendered outside the .app div picks up dark / high-contrast tokens too.
+  useEffect(() => {
+    document.body.classList.toggle('app--dark', !!(state.setupDone && state.darkMode))
+    document.body.classList.toggle('app--hc', !!(state.setupDone && state.highContrast))
+  }, [state.setupDone, state.darkMode, state.highContrast])
 
   if (!state.setupDone) return <LandingAuth />
   if (activeProfile === 'main' && state.setupDone && state.loggedOut) return <LandingAuth initialPhase="login" />

@@ -4,7 +4,7 @@ import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
-import CustomerSearch from './CustomerSearch.jsx'
+import CustomerPicker from './CustomerPicker.jsx'
 import CheckoutModal from './CheckoutModal.jsx'
 import { IconUser, IconChevron, IconPlus } from './icons.jsx'
 
@@ -22,42 +22,6 @@ function discountAmountOf(discount, subtotal) {
   if (!v || v <= 0) return 0
   if (discount.type === 'percent') return Math.round(subtotal * Math.min(v, 100) / 100)
   return Math.min(v, subtotal)
-}
-
-// Change/attach customer modal — pending value committed on Save (CustomerSearch
-// fires onChange on every keystroke, so we don't commit/close until Save).
-function CustomerModal() {
-  const { state, dispatch } = useStore()
-  const { closeModal } = useModal()
-  const t = useLang()
-  const order = getActiveOrder(state)
-  const [sel, setSel] = useState(order.customer)
-  const walkInName = `Sale ${order.number}`
-
-  function setWalkIn() {
-    const customer = { name: walkInName, phone: '' }
-    dispatch({ type: 'SET_ORDER_CUSTOMER', payload: customer })
-    closeModal()
-  }
-
-  return (
-    <div className="store-modal">
-      <h3>{t('rsCustomer')}</h3>
-      <CustomerSearch value={sel} onChange={setSel} />
-      <button className="button light" style={{ width: '100%', margin: '10px 0 0' }} onClick={setWalkIn}>
-        + {walkInName}
-      </button>
-      <div className="row" style={{ marginTop: 12 }}>
-        <button className="button" disabled={!sel?.name?.trim()} style={{ opacity: sel?.name?.trim() ? 1 : 0.5 }}
-          onClick={() => { dispatch({ type: 'SET_ORDER_CUSTOMER', payload: sel }); closeModal() }}>
-          {t('doneBtn')}
-        </button>
-        {order.customer
-          ? <button className="button light" onClick={() => { dispatch({ type: 'SET_ORDER_CUSTOMER', payload: null }); closeModal() }}>{t('removePhoto')}</button>
-          : <button className="button light" onClick={closeModal}>{t('cancel')}</button>}
-      </div>
-    </div>
-  )
 }
 
 export default function ReviewSale() {
@@ -137,11 +101,11 @@ export default function ReviewSale() {
           <div className="review-section-head">
             <strong>{t('rsCustomer')}</strong>
             {order.customer
-              ? <button className="home-link" onClick={() => openModal(<CustomerModal />)}>{t('rsChangeCustomer')}</button>
-              : <button className="home-link" onClick={() => openModal(<CustomerModal />)}>+ {t('rsAddCustomer')}</button>}
+              ? <button className="home-link" onClick={() => openModal(<CustomerPicker />)}>{t('rsChangeCustomer')}</button>
+              : <button className="home-link" onClick={() => openModal(<CustomerPicker />)}>+ {t('rsAddCustomer')}</button>}
           </div>
           {order.customer ? (
-            <button className="review-cust-card" onClick={() => openModal(<CustomerModal />)}>
+            <button className="review-cust-card" onClick={() => openModal(<CustomerPicker />)}>
               <span className="review-cust-avatar">{(order.customer.name || '?').charAt(0).toUpperCase()}</span>
               <span className="review-cust-text">
                 <strong>{order.customer.name}</strong>
@@ -150,7 +114,7 @@ export default function ReviewSale() {
               <IconChevron size={18} />
             </button>
           ) : (
-            <button className="review-cust-empty" onClick={() => openModal(<CustomerModal />)}>
+            <button className="review-cust-empty" onClick={() => openModal(<CustomerPicker />)}>
               <span className="review-cust-avatar review-cust-avatar--empty"><IconUser size={20} /></span>
               <span>{t('rsWalkIn')}</span>
               <IconPlus size={18} />

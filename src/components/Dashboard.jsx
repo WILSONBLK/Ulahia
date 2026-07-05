@@ -10,7 +10,7 @@ export default function Dashboard() {
   const { todaySales, todayProfit } = useStats()
 
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const greeting = hour < 12 ? t('greetMorning') : hour < 17 ? t('greetAfternoon') : t('greetEvening')
 
   const recent = state.transactions.slice(0, 6)
 
@@ -29,9 +29,9 @@ export default function Dashboard() {
       </div>
 
       {/* PRIMARY CTA */}
-      <button className="sell-cta" onClick={goSell}>
-        <span style={{ fontSize: '1.6rem' }}>💰</span>
-        <span>New Sale</span>
+      <button type="button" className="sell-cta" onClick={goSell}>
+        <span className="sell-cta-icon">💰</span>
+        <span>{t('dashStartNewSale')}</span>
         <span className="sell-cta-arrow">→</span>
       </button>
 
@@ -52,16 +52,16 @@ export default function Dashboard() {
       {/* Recent transactions */}
       <section className="section">
         <div className="section-head">
-          <h2>Recent Sales</h2>
+          <h2>{t('dashRecentSales')}</h2>
           {recent.length > 0 && (
-            <button className="button light" onClick={() => dispatch({ type: 'SET_VIEW', payload: 'reports' })}>
-              See all
+            <button type="button" className="button light" onClick={() => dispatch({ type: 'SET_VIEW', payload: 'reports' })}>
+              {t('dashSeeAll')}
             </button>
           )}
         </div>
 
         {recent.length === 0 ? (
-          <div className="empty">No sales yet. Tap <strong>New Sale</strong> to get started.</div>
+          <div className="empty">{t('dashNoSalesYet')}</div>
         ) : (
           <div className="list">
             {recent.map(txn => (
@@ -77,8 +77,8 @@ export default function Dashboard() {
                 </div>
                 <div className="txn-right">
                   <strong>{money(txn.total)}</strong>
-                  <span className={`pill${txn.mode === 'debt' ? ' warn' : ''}`}>
-                    {txn.mode === 'cash' ? 'Cash' : 'Debt'}
+                     <span className={`pill${txn.mode === 'debt' ? ' warn' : txn.mode === 'transfer' ? ' blue-pill' : ''}`}>
+                       {txn.mode === 'cash' ? t('cash') : txn.mode === 'transfer' ? 'Transfer' : t('debt')}
                   </span>
                 </div>
               </div>

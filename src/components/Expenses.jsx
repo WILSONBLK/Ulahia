@@ -109,18 +109,6 @@ export default function Expenses() {
   const filtered = filterByPeriod(records, period)
   const total = filtered.reduce((s, r) => s + r.amount, 0)
 
-  const tabStyle = active => ({
-    flex: 1,
-    minHeight: 40,
-    border: '1px solid var(--line)',
-    borderRadius: 8,
-    background: active ? 'var(--green)' : 'white',
-    color: active ? 'white' : 'var(--ink)',
-    fontWeight: 700,
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-  })
-
   const PERIODS = [
     { key: 'today', label: t('today') },
     { key: 'week', label: t('thisWeek') },
@@ -155,9 +143,9 @@ export default function Expenses() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <button style={tabStyle(tab === 'expenses')} onClick={() => setTab('expenses')}>{t('expenses')}</button>
-        <button style={tabStyle(tab === 'withdrawals')} onClick={() => setTab('withdrawals')}>{t('withdrawals')}</button>
+      <div className="segmented-tabs">
+        <button className={`segmented-tab${tab === 'expenses' ? ' is-active' : ''}`} onClick={() => setTab('expenses')}>{t('expenses')}</button>
+        <button className={`segmented-tab${tab === 'withdrawals' ? ' is-active' : ''}`} onClick={() => setTab('withdrawals')}>{t('withdrawals')}</button>
       </div>
 
       <div className="report-periods">
@@ -190,8 +178,7 @@ export default function Expenses() {
                 {confirmDeleteId === r.id
                   ? (
                     <button
-                      className="button"
-                      style={{ minHeight: 34, padding: '0 10px', fontSize: '0.85rem', background: 'var(--red)' }}
+                      className="button btn-sm btn-danger"
                       onClick={() => (tab === 'expenses' ? deleteExpense(r) : deleteWithdrawal(r))}
                     >
                       {t('sureBtn')}
@@ -199,8 +186,7 @@ export default function Expenses() {
                   )
                   : (
                     <button
-                      className="button light"
-                      style={{ minHeight: 34, padding: '0 10px', fontSize: '0.85rem', color: 'var(--red)' }}
+                      className="button light btn-sm btn-danger-text"
                       onClick={() => setConfirmDeleteId(r.id)}
                     >
                       {t('deleteProduct')}

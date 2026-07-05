@@ -4,6 +4,7 @@ import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { useLang } from '../useLang.js'
 import { resizeImage } from '../utils.js'
+import { activeCurrency } from '../currency.js'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
 import { IconCamera, IconX } from './icons.jsx'
 
@@ -22,6 +23,7 @@ export default function ProductForm({ product = null }) {
   const [category, setCategory] = useState(product?.category || '')
   const [image, setImage] = useState(product?.image || null)
   const fileRef = useRef(null)
+  const currencySymbol = activeCurrency().symbol
   const qtyNum = Number(qty || 0)
   const showFixedFields = isEdit ? product.type === 'fixed' : qtyNum > 0
   const showFlexHint = !isEdit && qtyNum <= 0 && qty.trim() !== ''
@@ -114,7 +116,7 @@ export default function ProductForm({ product = null }) {
         </label>
 
         <label className="label wide">
-          {t('cost')} (₦)
+          {t('cost')} ({currencySymbol})
           <input className="field" name="cost" type="number" min="0"
             defaultValue={isEdit ? (product.type === 'fixed' ? product.cost : product.invested) : ''}
             placeholder={t('costPlaceholder')} />
@@ -139,7 +141,7 @@ export default function ProductForm({ product = null }) {
         {showFixedFields && (
           <>
             <label className="label">
-              {t('price')} (₦)
+              {t('price')} ({currencySymbol})
               <input className="field" name="price" type="number" min="1"
                 defaultValue={isEdit && product.type === 'fixed' ? product.price : ''}
                 placeholder={t('pricePlaceholder')} required

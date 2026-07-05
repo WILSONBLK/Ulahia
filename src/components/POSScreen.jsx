@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 let _posSearch = ''
 let _posCategory = 'all'
@@ -6,11 +6,12 @@ import { useStore, getActiveOrder } from '../store.jsx'
 import { useModal } from '../modal.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
+import { activeCurrency } from '../currency.js'
 import ProductForm from './ProductForm.jsx'
 import OrderTabs from './OrderTabs.jsx'
-import CustomerSearch from './CustomerSearch.jsx'
+import CustomerPicker from './CustomerPicker.jsx'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
-import { IconUsers, IconSearch, IconBox } from './icons.jsx'
+import { IconUserPlus, IconSearch, IconBox, IconX } from './icons.jsx'
 
 // Small product thumbnail — real image, else a colored initial tile
 function Thumb({ product }) {
@@ -19,69 +20,6 @@ function Thumb({ product }) {
   }
   const initial = (product.name || '?').trim().charAt(0).toUpperCase()
   return <span className="pos-thumb pos-thumb--initial">{initial}</span>
-}
-
-// Attach-customer modal (person+ icon) — commit on Save
-function AttachCustomerModal() {
-  const { state, dispatch } = useStore()
-  const { closeModal } = useModal()
-  const t = useLang()
-  const order = getActiveOrder(state)
-  const [sel, setSel] = useState(order.customer)
-  const [editedName, setEditedName] = useState(order.customer?.name || '')
-  const saleLabel = `Sale ${order.number}`
-
-  useEffect(() => {
-    setEditedName(sel?.name || '')
-  }, [sel])
-
-  function setWalkIn() {
-    dispatch({ type: 'SET_ORDER_CUSTOMER', payload: null })
-    closeModal()
-  }
-
-  function saveCustomer() {
-    const name = editedName.trim()
-    if (!name) return
-    dispatch({ type: 'SET_ORDER_CUSTOMER', payload: { ...(sel || {}), name } })
-    closeModal()
-  }
-
-  function createNewSale() {
-    dispatch({ type: 'NEW_ORDER' })
-    closeModal()
-  }
-
-  const hasCustomerName = !!sel?.name?.trim()
-
-  return (
-    <div className="store-modal">
-      <h3>{t('rsAddCustomer')}</h3>
-      <CustomerSearch value={sel} onChange={setSel} />
-      {sel && (
-        <label className="label" style={{ marginTop: 10 }}>
-          {t('customerName')}
-          <input
-            className="field"
-            value={editedName}
-            onChange={e => setEditedName(e.target.value)}
-            placeholder={saleLabel}
-          />
-        </label>
-      )}
-      <div className="row" style={{ marginTop: 12 }}>
-        <button className="button" disabled={!editedName.trim()} style={{ opacity: editedName.trim() ? 1 : 0.5 }}
-          onClick={saveCustomer}>
-          {t('doneBtn')}
-        </button>
-        {hasCustomerName && <button className="button light" onClick={setWalkIn}>{t('rsWalkIn')}</button>}
-      </div>
-      <div className="row" style={{ marginTop: 10 }}>
-        <button className="button light" onClick={createNewSale}>+ New Sale</button>
-        <button className="button light" onClick={closeModal}>{t('cancel')}</button>
-      </div>
-    </div>
-  )
 }
 
 export default function POSScreen() {
@@ -102,6 +40,7 @@ export default function POSScreen() {
   const [editQtyVal, setEditQtyVal] = useState('')
   const flexInputRef = useRef(null)
   const qtyInputRef = useRef(null)
+  const currencySymbol = activeCurrency().symbol
 
   const pinnedIds = state.pinnedProducts || []
 
@@ -171,11 +110,23 @@ export default function POSScreen() {
           <h2 className="pos-title">{activeSaleLabel}</h2>
           <span className="pos-session-subtitle">{activeSaleSub}</span>
         </div>
-        <button className="home-iconbtn" aria-label={t('rsAddCustomer')} onClick={() => openModal(<AttachCustomerModal />)}>
-          <IconUsers size={22} />
+        <button className="home-iconbtn" aria-label={t('posAddCustomer')} title={t('posAddCustomer')} onClick={() => openModal(<CustomerPicker />)}>
+          <IconUserPlus size={22} />
           {activeOrder.customer && <span className="pos-cust-dot" />}
         </button>
       </div>
+
+      {/* Attached customer chip — clear affordance to change/remove */}
+      {activeOrder.customer && (
+        <button className="pos-customer-chip" onClick={() => openModal(<CustomerPicker />)}>
+          <span className="pos-customer-chip-avatar">{(activeOrder.customer.name || '?').charAt(0).toUpperCase()}</span>
+          <span className="pos-customer-chip-text">
+            <strong>{activeOrder.customer.name}</strong>
+            <span>{activeOrder.customer.phone || t('rsChangeCustomer')}</span>
+          </span>
+          <IconX size={16} />
+        </button>
+      )}
 
       {/* Search */}
       <div className="pos-search-wrap">
@@ -218,7 +169,7 @@ export default function POSScreen() {
       {/* Product list */}
       <div className="pos-products">
         {filtered.length === 0 && (
-          <div className="empty" style={{ margin: 20 }}>
+          <div className="empty pos-empty-state">
             {search ? t('noProductsMatching', { query: search }) : t('noProductsYet')}
           </div>
         )}
@@ -292,7 +243,7 @@ export default function POSScreen() {
                           onKeyDown={e => { if (e.key === 'Enter') commitQtyEdit(product.id) }}
                         />
                       ) : (
-                        <span className="qty-value" style={{ cursor: 'pointer' }} onClick={() => openQtyEdit(product.id, qty)} title={t('tapTypeQty')}>{qty}</span>
+                        <span className="qty-value qty-value--editable" onClick={() => openQtyEdit(product.id, qty)} title={t('tapTypeQty')}>{qty}</span>
                       )}
                       <button className="qty-btn" onClick={() => updateFixed(product.id, qty + 1)} disabled={qty >= product.qty}>+</button>
                     </div>
@@ -302,7 +253,7 @@ export default function POSScreen() {
                 {!isFixed && (
                   isFlexActive ? (
                     <div className="flex-input-wrap">
-                      <span className="flex-naira">₦</span>
+                      <span className="flex-naira">{currencySymbol}</span>
                       <input
                         ref={flexInputRef}
                         className="flex-amount-input"

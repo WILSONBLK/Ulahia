@@ -28,6 +28,13 @@ export function setCloudMeta(meta) {
   localStorage.setItem(CLOUD_META_KEY, JSON.stringify(meta))
 }
 
+// Used by "start fresh" — discards this device's cloud identity so the next
+// signup generates a brand new profile_id/recovery_code instead of reusing
+// (and silently merging onto) the old one.
+export function clearCloudMeta() {
+  localStorage.removeItem(CLOUD_META_KEY)
+}
+
 export async function pushState(profileId, recoveryCode, state) {
   if (!supabase) return { ok: false }
   // Don't sync ephemeral fields, and don't sync device-local preferences

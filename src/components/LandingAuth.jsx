@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store.jsx'
-import { getOrCreateCloudMeta, setCloudMeta, pullByCode, isSupabaseEnabled } from '../sync.js'
+import { getOrCreateCloudMeta, setCloudMeta, clearCloudMeta, pullByCode, isSupabaseEnabled } from '../sync.js'
 import { hashPin } from '../utils.js'
 import { useLang } from '../useLang.js'
 import { LogoLockup } from './Logo.jsx'
@@ -527,6 +527,19 @@ function LoginForm({ onBack, onSignup }) {
   const [error, setError] = useState('')
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [confirmingReset, setConfirmingReset] = useState(false)
+
+  // Only meaningful when this device already has a locked local account
+  // (forgot password, and either lost the recovery code or it doesn't
+  // match anything). Wipes this device's shop + cloud identity so the next
+  // signup gets a genuinely new recovery code instead of silently reusing
+  // and merging onto the old one (getOrCreateCloudMeta is idempotent).
+  function handleStartFresh() {
+    localStorage.removeItem('ulahia-profile-main')
+    localStorage.removeItem('ulahia-signup-progress')
+    clearCloudMeta()
+    window.location.reload()
+  }
 
   const digits = s => String(s || '').replace(/\D/g, '')
   const normalizedPhone = digits(phone)
@@ -740,6 +753,30 @@ function LoginForm({ onBack, onSignup }) {
           <p className="la-switch-line">
             {t('laNoAccountQ')} <button type="button" className="la-text-link la-text-link--inline" onClick={onSignup}>{t('laSignUpLink')}</button>
           </p>
+
+          {state.setupDone && (
+            confirmingReset ? (
+              <div className="la-note la-note--danger">
+                <p><strong>{t('laStartFreshConfirmTitle')}</strong></p>
+                <p>{t('laStartFreshConfirmBody')}</p>
+                <div className="la-confirm-row">
+                  <button type="button" className="button secondary" onClick={() => setConfirmingReset(false)}>
+                    {t('laStartFreshCancelBtn')}
+                  </button>
+                  <button type="button" className="button danger" onClick={handleStartFresh}>
+                    {t('laStartFreshConfirmBtn')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="la-switch-line">
+                {t('laForgotBothQ')}{' '}
+                <button type="button" className="la-text-link la-text-link--inline" onClick={() => setConfirmingReset(true)}>
+                  {t('laStartFreshLink')}
+                </button>
+              </p>
+            )
+          )}
 
           <p className="la-secure-note">
             <span className="la-secure-icon"><IconShield size={20} /></span>

@@ -83,18 +83,6 @@ export default function Customers() {
       c.phone.includes(search)
     )
 
-  const tabStyle = active => ({
-    flex: 1,
-    minHeight: 40,
-    border: '1px solid var(--line)',
-    borderRadius: 8,
-    background: active ? 'var(--green)' : 'white',
-    color: active ? 'white' : 'var(--ink)',
-    fontWeight: 700,
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-  })
-
   return (
     <section className="section">
       <div className="section-head">
@@ -107,11 +95,11 @@ export default function Customers() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <button style={tabStyle(tab === 'owing')} onClick={() => setTab('owing')}>
+      <div className="segmented-tabs">
+        <button className={`segmented-tab${tab === 'owing' ? ' is-active' : ''}`} onClick={() => setTab('owing')}>
           {t('allDebts')} ({state.customers.filter(c => c.totalBalance > 0).length})
         </button>
-        <button style={tabStyle(tab === 'cleared')} onClick={() => setTab('cleared')}>
+        <button className={`segmented-tab${tab === 'cleared' ? ' is-active' : ''}`} onClick={() => setTab('cleared')}>
           {t('clearedDebts')} ({state.customers.filter(c => c.totalBalance === 0).length})
         </button>
       </div>
@@ -149,16 +137,14 @@ export default function Customers() {
                 {c.totalBalance > 0 && (
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button
-                      className="button secondary"
-                      style={{ minHeight: 38, padding: '0 14px', fontSize: '0.9rem' }}
+                      className="button secondary btn-sm"
                       onClick={() => openModal(<PaymentModal customer={c} />)}
                     >
                       {t('paid')}
                     </button>
                     {c.phone && (
                       <button
-                        className="button"
-                        style={{ minHeight: 38, padding: '0 10px', fontSize: '0.88rem', background: '#25D366' }}
+                        className="button btn-sm btn-whatsapp"
                         title={t('whatsappReminderTitle')}
                         onClick={() => {
                           const raw = c.phone.replace(/\D/g, '')

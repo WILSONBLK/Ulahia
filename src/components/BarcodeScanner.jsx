@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { useStore } from '../store.jsx'
 import { useModal } from '../modal.jsx'
+import { money } from '../utils.js'
 import RestockModal from './RestockModal.jsx'
 
 const SUPPORTED = typeof window !== 'undefined' && 'BarcodeDetector' in window
@@ -153,7 +154,7 @@ export default function BarcodeScanner() {
                 <strong>{result.product.name}</strong>
                 <span>
                   {result.product.type === 'flexible'
-                    ? `Invested ₦${result.product.invested.toLocaleString()}`
+                    ? `Invested ${money(result.product.invested)}`
                     : `${result.product.qty} in stock`}
                 </span>
               </div>
@@ -181,8 +182,8 @@ export default function BarcodeScanner() {
                       <strong>{p.name}</strong>
                       <span>
                         {p.type === 'flexible'
-                          ? `₦${p.invested.toLocaleString()} invested`
-                          : `${p.qty} in stock · ₦${p.price.toLocaleString()}`}
+                          ? `${money(p.invested)} invested`
+                          : `${p.qty} in stock · ${money(p.price)}`}
                       </span>
                     </div>
                     <span style={{ color: 'var(--green)', fontWeight: 700, fontSize: '0.88rem' }}>Link →</span>
