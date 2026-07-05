@@ -6030,3 +6030,19 @@ body { font-size: 1rem; }
 .home-firstrun > svg { color: var(--muted); flex-shrink: 0; }
 .app--dark .home-firstrun { background: rgba(23, 138, 128, 0.14); border-color: rgba(47, 191, 175, 0.4); }
 .app--dark .home-firstrun:active { background: rgba(23, 138, 128, 0.22); }
+
+/* Receipt actions — their own wrapping row so they never overflow phones */
+.receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+.receipt-action-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}

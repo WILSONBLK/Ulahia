@@ -84,19 +84,19 @@ export default function ReceiptModal({ transaction: txn }) {
   return (
     <div className="receipt-modal">
       <div className="receipt-header">
-        <button className="icon-button" onClick={closeModal}>←</button>
+        <button className="icon-button" onClick={closeModal} aria-label={t('cancel')}>←</button>
         <h3 style={{ margin: 0 }}>{t('receiptTitle')}</h3>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="button secondary" style={{ minHeight: 38, padding: '0 14px' }} onClick={share}>
-            📤 {t('shareBtn')}
-          </button>
-          <button className="button" style={{ minHeight: 38, padding: '0 14px', background: '#25D366' }} onClick={shareWhatsApp}>
-            WhatsApp
-          </button>
-          <button className="button light" style={{ minHeight: 38, padding: '0 14px' }} onClick={download}>
-            💾 {t('saveImageBtn')}
-          </button>
-        </div>
+      </div>
+      <div className="receipt-actions">
+        <button className="button secondary receipt-action-btn" onClick={share}>
+          📤 {t('shareBtn')}
+        </button>
+        <button className="button receipt-action-btn" style={{ background: '#25D366' }} onClick={shareWhatsApp}>
+          WhatsApp
+        </button>
+        <button className="button light receipt-action-btn" onClick={download}>
+          💾 {t('saveImageBtn')}
+        </button>
       </div>
 
       {/* Canvas receipt — hidden visually, actual pixels sent to share/download */}
