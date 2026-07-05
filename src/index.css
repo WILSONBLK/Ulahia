@@ -176,7 +176,7 @@ button {
   width: 52px;
   height: 52px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--ink);
   background: white;
   font-size: 1.3rem;
@@ -196,7 +196,7 @@ button {
   height: 42px;
   color: white;
   background: var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 900;
 }
 
@@ -348,7 +348,7 @@ textarea:disabled {
   color: var(--ink);
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-align: left;
   font-weight: 800;
 }
@@ -370,7 +370,7 @@ textarea:disabled {
   padding: 24px;
   background: #E3EFED;
   border: 1px solid #CDE4E1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .hero h1 {
@@ -433,7 +433,7 @@ textarea:disabled {
   padding: 16px;
   color: white;
   background: var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .phone-total span {
@@ -457,7 +457,7 @@ textarea:disabled {
   padding: 12px;
   background: white;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .mini-card span,
@@ -510,7 +510,7 @@ textarea:disabled {
 .card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
 }
 
@@ -586,7 +586,7 @@ textarea:disabled {
   width: 100%;
   min-height: 56px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: white;
   background: var(--green);
   font-size: 1rem;
@@ -628,7 +628,7 @@ textarea:disabled {
   padding: 10px 12px;
   background: #F7F5F1;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .list-row strong,
@@ -734,7 +734,7 @@ textarea:disabled {
   color: var(--muted);
   background: #F7F5F1;
   border: 1px dashed var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-align: center;
 }
 
@@ -747,7 +747,7 @@ textarea:disabled {
   padding: 14px 16px;
   color: white;
   background: #10251d;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
   transform: translateY(20px);
   opacity: 0;
@@ -825,7 +825,7 @@ textarea:disabled {
   padding: 12px;
   background: #F7F5F1;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .step-number {
@@ -836,7 +836,7 @@ textarea:disabled {
   height: 38px;
   color: white;
   background: var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 900;
 }
 
@@ -1042,7 +1042,7 @@ textarea:disabled {
   padding: 13px 14px;
   background: white;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .txn-info {
@@ -1116,7 +1116,7 @@ textarea:disabled {
   padding: 0 12px;
   min-height: 38px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   font-weight: 700;
   font-size: 0.88rem;
@@ -1158,7 +1158,7 @@ textarea:disabled {
   min-height: 38px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--red);
   font-weight: 700;
@@ -1232,7 +1232,7 @@ textarea:disabled {
   min-height: 44px;
   padding: 0 16px;
   border: 2px solid var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--green);
   font-weight: 900;
@@ -1251,7 +1251,7 @@ textarea:disabled {
   display: flex;
   align-items: center;
   border: 2px solid var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1566,7 +1566,7 @@ textarea:disabled {
   margin-top: 10px;
   padding: 10px 14px;
   background: #DDEEDA;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 700;
   color: #0B544D;
   font-size: 0.92rem;
@@ -1576,7 +1576,7 @@ textarea:disabled {
   margin-top: 10px;
   padding: 10px 14px;
   background: #fff9db;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.92rem;
   color: #8a4700;
 }
@@ -1614,7 +1614,7 @@ textarea:disabled {
   z-index: 20;
   background: white;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
   max-height: 220px;
   overflow-y: auto;
@@ -2286,7 +2286,7 @@ textarea:disabled {
   min-height: 44px;
   padding: 0 8px;
   border: 2px solid var(--green);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 700;
   text-align: right;
@@ -2298,7 +2298,7 @@ textarea:disabled {
   min-height: 44px;
   padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--green);
   color: white;
   font-weight: 800;
@@ -2315,7 +2315,7 @@ textarea:disabled {
   width: 36px;
   height: 44px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--muted);
   font-size: 1.1rem;
@@ -2341,7 +2341,7 @@ textarea:disabled {
   width: 36px;
   height: 36px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--red);
   font-size: 1.1rem;
@@ -2512,13 +2512,13 @@ textarea:disabled {
 .recovery-bar-wrap {
   height: 8px;
   background: var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .recovery-bar-fill {
   height: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: width 0.4s ease;
 }
 
@@ -2730,7 +2730,7 @@ textarea:disabled {
   min-height: 40px;
   padding: 0 4px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   font-weight: 700;
   font-size: clamp(0.72rem, 3vw, 0.88rem);
@@ -2764,7 +2764,7 @@ textarea:disabled {
   min-height: 44px;
   padding: 0 4px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--ink);
   font-weight: 700;
@@ -2947,7 +2947,7 @@ textarea:disabled {
   padding: 8px 10px;
   background: #fff5f5;
   border: 1px solid #ffc9c9;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.82rem;
   color: var(--red);
   font-weight: 600;
@@ -2971,7 +2971,7 @@ textarea:disabled {
   justify-content: space-between;
   padding: 12px 14px;
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line);
 }
 .restock-current span { font-size: 0.83rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -3022,7 +3022,7 @@ textarea:disabled {
   width: 72px;
   padding: 7px 8px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   font-weight: 700;
   text-align: right;
@@ -3123,7 +3123,7 @@ textarea:disabled {
   color: var(--muted);
   padding: 8px 12px;
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .scanner-found {
@@ -3200,7 +3200,7 @@ textarea:disabled {
   flex: 1;
   min-height: 38px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   font-weight: 700;
   font-size: 0.85rem;
@@ -3292,7 +3292,7 @@ textarea:disabled {
   width: 36px;
   height: 36px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   color: var(--muted);
   font-size: 1.1rem;
@@ -3402,7 +3402,7 @@ textarea:disabled {
   width: 38px;
   height: 38px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   font-size: 1.1rem;
   cursor: pointer;
@@ -3422,7 +3422,7 @@ textarea:disabled {
 .co-discount-btn {
   min-height: 44px;
   border: 2px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: white;
   font-weight: 700;
   font-size: 0.9rem;
@@ -3438,7 +3438,7 @@ textarea:disabled {
   margin-top: 8px;
   padding: 10px 14px;
   background: #E3EFED;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   color: var(--green);
   font-weight: 700;
@@ -3770,7 +3770,7 @@ textarea:disabled {
 .la-input-prefix {
   padding: 6px 10px;
   background: #F3F1EC;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.95rem;
   color: var(--ink);
@@ -3791,7 +3791,7 @@ textarea:disabled {
   gap: 4px;
   padding: clamp(6px, 1.8vw, 7px) clamp(8px, 2.4vw, 10px);
   background: #F3F1EC;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: clamp(0.86rem, 3.2vw, 0.92rem);
   color: var(--ink);
@@ -5661,7 +5661,7 @@ body { font-size: 1rem; }
 .review-remove {
   width: 30px; height: 30px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--red);
   font-size: 1.1rem;
