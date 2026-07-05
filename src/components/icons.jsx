@@ -178,6 +178,13 @@ export const IconUserPlus = (p) => (
   </Icon>
 )
 
+export const IconChat = (p) => (
+  <Icon {...p}>
+    <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v9a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 3.7a.6.6 0 0 1-1-.47V7A1.5 1.5 0 0 1 4 5.5Z" />
+    <path d="M7.5 10.2h9M7.5 13.3h5.5" />
+  </Icon>
+)
+
 export const IconCash = (p) => (
   <Icon {...p}>
     <rect x="2.5" y="6.5" width="19" height="11" rx="2" />

@@ -4,6 +4,7 @@ import { useLang } from '../useLang.js'
 import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
+import { IconChat } from './icons.jsx'
 
 function PaymentModal({ customer }) {
   const { dispatch } = useStore()
@@ -146,6 +147,7 @@ export default function Customers() {
                       <button
                         className="button btn-sm btn-whatsapp"
                         title={t('whatsappReminderTitle')}
+                        aria-label={t('whatsappReminderTitle')}
                         onClick={() => {
                           const raw = c.phone.replace(/\D/g, '')
                           const num = raw.startsWith('0') ? '234' + raw.slice(1) : raw
@@ -153,7 +155,7 @@ export default function Customers() {
                           window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank')
                         }}
                       >
-                        💬
+                        <IconChat size={18} />
                       </button>
                     )}
                   </div>
