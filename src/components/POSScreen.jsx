@@ -10,6 +10,7 @@ import { activeCurrency } from '../currency.js'
 import ProductForm from './ProductForm.jsx'
 import OrderTabs from './OrderTabs.jsx'
 import CustomerPicker from './CustomerPicker.jsx'
+import CheckoutModal from './CheckoutModal.jsx'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
 import { IconUserPlus, IconSearch, IconBox, IconX, IconStar, IconStarFilled } from './icons.jsx'
 
@@ -286,15 +287,15 @@ export default function POSScreen() {
       {/* Order tabs (multi-sale) */}
       <OrderTabs />
 
-      {/* Review bar */}
+      {/* Checkout bar — straight to payment, no separate review page */}
       {cartCount > 0 && (
         <div className="pos-checkout-bar">
           <div className="pos-cart-summary">
             <span className="pos-cart-count">{cartCount === 1 ? t('cartItemsOne') : t('cartItemsMany', { n: cartCount })}</span>
             <strong className="pos-cart-total">{money(cartTotal)}</strong>
           </div>
-          <button className="checkout-btn" onClick={() => dispatch({ type: 'SET_VIEW', payload: 'review' })}>
-            {t('reviewSaleBtn')} →
+          <button className="checkout-btn" onClick={() => openModal(<CheckoutModal />)}>
+            {t('checkout')} →
           </button>
         </div>
       )}

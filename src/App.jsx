@@ -7,7 +7,6 @@ import LandingAuth from './components/LandingAuth.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import Home from './components/Home.jsx'
 import POSScreen from './components/POSScreen.jsx'
-import ReviewSale from './components/ReviewSale.jsx'
 import Customers from './components/Customers.jsx'
 import CustomerProfile from './components/CustomerProfile.jsx'
 import Products from './components/Products.jsx'
@@ -27,7 +26,6 @@ import { TOUR_SEEN_KEY } from './utils.js'
 const VIEWS = {
   home: Home,
   sell: POSScreen,
-  review: ReviewSale,
   customers: Customers,
   customer: CustomerProfile,
   debts: Customers,
@@ -70,7 +68,6 @@ export default function App() {
   const View = VIEWS[state.view] || Home
   const isHome = state.view === 'home'
   const isPOS = state.view === 'sell'
-  const isReview = state.view === 'review'
 
   const appClass = [
     'app',
@@ -105,7 +102,7 @@ export default function App() {
       {offlineBanner}
       {demoBanner}
 
-      {(isHome || isPOS || isReview)
+      {(isHome || isPOS)
         ? <View />
         : (
           <>

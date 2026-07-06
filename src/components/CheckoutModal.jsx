@@ -104,8 +104,9 @@ export default function CheckoutModal() {
     if (navigator.vibrate) navigator.vibrate([80, 40, 80])
 
     closeModal()
-    // Return to the dashboard so the (now-consumed) review screen isn't left empty
-    dispatch({ type: 'SET_VIEW', payload: 'home' })
+    // Stay on the sales screen — the cart auto-resets to a fresh order, so the
+    // shopkeeper can keep selling without hopping back to the dashboard
+    dispatch({ type: 'SET_VIEW', payload: 'sell' })
     showToast(t('saleRecordedToast', { amount: money(total) }))
 
     // Auto-show receipt after a brief pause so modal closes cleanly

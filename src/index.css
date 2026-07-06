@@ -6395,3 +6395,20 @@ body { font-size: 1rem; }
 
 .app--dark .cpr-avatar { background: rgba(23, 138, 128, 0.18); }
 .app--dark .cpr-stat { background: var(--panel); border-color: var(--line); }
+
+/* More: quick theme toggle row */
+.more-theme-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.more-theme-row .more-row-icon--night {
+  color: #C9A227;
+  background: rgba(201, 162, 39, 0.14);
+}
+.app--dark .more-theme-row { background: #1E2426; border-color: var(--line); }

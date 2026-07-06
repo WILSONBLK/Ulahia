@@ -7,7 +7,7 @@ import { money } from '../utils.js'
 import { LogoLockup } from './Logo.jsx'
 import { useLang } from '../useLang.js'
 import {
-  IconMenu, IconBell, IconStore, IconChevronDown, IconChevron,
+  IconBell, IconStore, IconChevronDown, IconChevron,
   IconCart, IconCheck, IconPlus, IconBox,
 } from './icons.jsx'
 
@@ -155,11 +155,8 @@ export default function Home() {
 
   return (
     <div className="home-screen home-v2">
-      {/* Header: menu · brand · notifications */}
-      <header className="home-topbar">
-        <button className="home-iconbtn" aria-label={t('navMore')} onClick={() => go('more')}>
-          <IconMenu size={24} />
-        </button>
+      {/* Header: brand · notifications (menu lives in the bottom "More" tab) */}
+      <header className="home-topbar home-topbar--nomenu">
         <LogoLockup size={30} tagline={false} />
         <button className="home-iconbtn home-bell" aria-label={t('navNotifications')} onClick={() => go('notifications')}>
           <IconBell size={23} />
