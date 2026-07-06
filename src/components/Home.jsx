@@ -8,7 +8,8 @@ import { LogoLockup } from './Logo.jsx'
 import { useLang } from '../useLang.js'
 import {
   IconBell, IconStore, IconChevronDown, IconChevron,
-  IconCart, IconCheck, IconPlus, IconBox,
+  IconCart, IconCheck, IconPlus, IconBox, IconUsers,
+  IconReports, IconDebts, IconMoon, IconSun,
 } from './icons.jsx'
 
 // Close-of-day summary — end-of-day reconciliation (cash / transfer / credit)
@@ -121,7 +122,8 @@ export default function Home() {
   const { openModal } = useModal()
   const stats = useStats()
   const { count: notifCount } = useNotifications()
-  const { todaySales, todayProfit, todayCount } = stats
+  const { todaySales, todayProfit, todayCount, lowStockCount, totalDebt } = stats
+  const dark = state.darkMode
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? t('greetMorning') : hour < 17 ? t('greetAfternoon') : t('greetEvening')
@@ -155,13 +157,23 @@ export default function Home() {
 
   return (
     <div className="home-screen home-v2">
-      {/* Header: brand · notifications (menu lives in the bottom "More" tab) */}
+      {/* Header: brand · theme · notifications (menu lives in the bottom "More" tab) */}
       <header className="home-topbar home-topbar--nomenu">
         <LogoLockup size={30} tagline={false} />
-        <button className="home-iconbtn home-bell" aria-label={t('navNotifications')} onClick={() => go('notifications')}>
-          <IconBell size={23} />
-          {notifCount > 0 && <span className="home-bell-badge">{notifCount}</span>}
-        </button>
+        <div className="home-topbar-actions">
+          <button
+            className="home-iconbtn"
+            aria-label={t('darkModeTitle')}
+            title={t('darkModeTitle')}
+            onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
+          >
+            {dark ? <IconSun size={22} /> : <IconMoon size={22} />}
+          </button>
+          <button className="home-iconbtn home-bell" aria-label={t('navNotifications')} onClick={() => go('notifications')}>
+            <IconBell size={23} />
+            {notifCount > 0 && <span className="home-bell-badge">{notifCount}</span>}
+          </button>
+        </div>
       </header>
 
       {/* Greeting + store selector */}
@@ -190,6 +202,18 @@ export default function Home() {
           <span className="home-firstrun-text">
             <strong>{t('homeFirstProductTitle')}</strong>
             <span>{t('homeFirstProductSub')}</span>
+          </span>
+          <IconChevron size={18} />
+        </button>
+      )}
+
+      {/* Low-stock alert — actionable, only when something needs restocking */}
+      {lowStockCount > 0 && (
+        <button className="home-alert" onClick={() => go('products')}>
+          <span className="home-alert-icon">⚠️</span>
+          <span className="home-alert-text">
+            <strong>{lowStockCount === 1 ? t('lowStockBannerOne') : t('lowStockBannerMany', { n: lowStockCount })}</strong>
+            <span>{t('lowStockTapHint')}</span>
           </span>
           <IconChevron size={18} />
         </button>
@@ -226,6 +250,39 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Quick Actions — fast access to the most-used destinations */}
+      <section className="home-quick">
+        <div className="home-section-head">
+          <strong className="home-section-title">{t('dashQuickActions')}</strong>
+        </div>
+        <div className="home-quick-grid">
+          <button className="home-quick-tile" onClick={() => go('products')}>
+            <span className="home-quick-icon home-quick-icon--teal"><IconBox size={22} /></span>
+            <span className="home-quick-label">{t('navProducts')}</span>
+            <span className="home-quick-sub">{t('productsSub')}</span>
+          </button>
+          <button className="home-quick-tile" onClick={() => go('customers')}>
+            <span className="home-quick-icon home-quick-icon--blue"><IconUsers size={22} /></span>
+            <span className="home-quick-label">{t('navCustomers')}</span>
+            <span className="home-quick-sub">{t('customersSub')}</span>
+          </button>
+          <button className="home-quick-tile" onClick={() => go('debts')}>
+            <span className="home-quick-icon home-quick-icon--terracotta"><IconDebts size={22} /></span>
+            <span className="home-quick-label">{t('navDebts')}</span>
+            <span className="home-quick-sub">
+              {totalDebt > 0
+                ? <span className="home-quick-sub--bad">{money(totalDebt)} {t('owedSuffix')}</span>
+                : t('debtsSub')}
+            </span>
+          </button>
+          <button className="home-quick-tile" onClick={() => go('reports')}>
+            <span className="home-quick-icon home-quick-icon--purple"><IconReports size={22} /></span>
+            <span className="home-quick-label">{t('navReports')}</span>
+            <span className="home-quick-sub">{t('reportsSub')}</span>
+          </button>
+        </div>
+      </section>
 
       {/* Today's Summary — 4 stats */}
       <section className="home-summary">

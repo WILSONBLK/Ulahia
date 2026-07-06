@@ -6,6 +6,9 @@ import { StoreProvider } from './store.jsx'
 import { ToastProvider } from './toast.jsx'
 import { ModalProvider } from './modal.jsx'
 import { PinGateProvider } from './components/PinGate.jsx'
+import { setupIOSZoomReset } from './iosZoom.js'
+
+setupIOSZoomReset()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
