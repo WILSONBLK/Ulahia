@@ -185,8 +185,20 @@ button {
 }
 
 .topbar-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
   font-size: 1.1rem;
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Balances the 52px back button so the title stays truly centred */
+.topbar-spacer {
+  width: 52px;
+  flex-shrink: 0;
 }
 
 .mark {

@@ -19,29 +19,23 @@ export default function TopBar() {
   const { state, dispatch } = useStore()
   const t = useLang()
 
+  // Detail views go back to their parent list; everything else to Home.
+  const BACK_TO = { customer: 'customers' }
+  const title = TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''
+
   return (
     <header className="topbar">
       <button
         type="button"
         className="topbar-back"
-        onClick={() => dispatch({ type: 'SET_VIEW', payload: 'home' })}
-        aria-label={t('dashboard')}
+        onClick={() => dispatch({ type: 'SET_VIEW', payload: BACK_TO[state.view] || 'home' })}
+        aria-label={t('laBackBtn')}
       >
         ←
       </button>
-      <strong className="topbar-title" title={TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''}>{TITLE_KEYS[state.view] ? t(TITLE_KEYS[state.view]) : ''}</strong>
-      <select
-        className="select topbar-lang"
-        aria-label="Language"
-        value={state.language}
-        onChange={e => dispatch({ type: 'SET_LANGUAGE', payload: e.target.value })}
-      >
-        <option value="pidgin">Pidgin</option>
-        <option value="en">English</option>
-        <option value="yo">Yoruba</option>
-        <option value="ig">Igbo</option>
-        <option value="ha">Hausa</option>
-      </select>
+      <strong className="topbar-title" title={title}>{title}</strong>
+      {/* Balances the back button so the title stays centred */}
+      <span className="topbar-spacer" aria-hidden="true" />
     </header>
   )
 }
