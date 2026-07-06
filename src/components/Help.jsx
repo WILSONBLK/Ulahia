@@ -59,11 +59,14 @@ export default function Help() {
       </section>
 
       <Section icon="🏠" title={t('helpSecHomeTitle')} defaultOpen>
-        <Item icon="🔆🌙" title={t('helpItemContrastTitle')}>
-          {t('helpItemContrastBody')}
+        <Item icon="🧭" title={t('hv2NavTitle')}>
+          {t('hv2NavBody')}
         </Item>
-        <Item icon="🌍" title={t('helpItemLangTitle')}>
-          {t('helpItemLangBody')}
+        <Item icon="📋" title={t('hv2SummaryTitle')}>
+          {t('hv2SummaryBody')}
+        </Item>
+        <Item icon="🌙" title={t('hv2AppearanceTitle')}>
+          {t('hv2AppearanceBody')}
         </Item>
         <Item icon="⚠️" title={t('helpItemLowStockTitle')}
           preview={<span className="pill warn" style={{ alignSelf: 'flex-start' }}>3 {t('leftSuffix')}</span>}>
@@ -78,17 +81,8 @@ export default function Help() {
           }>
           {t('helpItemSellBtnBody')}
         </Item>
-        <Item icon="🗂️" title={t('helpItemTilesTitle')}>
-          {t('helpItemTilesBody')}
-        </Item>
-        <Item icon="⚙️" title={t('helpItemSettingsRowTitle')}>
-          {t('helpItemSettingsRowBody')}
-        </Item>
-        <Item icon="🎮" title={t('helpItemDemoBtnTitle')}>
-          {t('helpItemDemoBtnBody')}
-        </Item>
-        <Item icon="📋" title={t('helpItemSummaryBarTitle')}>
-          {t('helpItemSummaryBarBody')}
+        <Item icon="🎮" title={t('hv2DemoTitle')}>
+          {t('hv2DemoBody')}
         </Item>
       </Section>
 
@@ -115,8 +109,11 @@ export default function Help() {
         <Item icon="⭐" title={t('helpItemPinStarTitle')}>
           {t('helpItemPinStarBody')}
         </Item>
-        <Item icon="🛒" title={t('helpItemCartBarTitle')}>
-          {t('helpItemCartBarBody')}
+        <Item icon="🏷️" title={t('hv2CategoriesTitle')}>
+          {t('hv2CategoriesBody')}
+        </Item>
+        <Item icon="🧾" title={t('hv2ReviewTitle')}>
+          {t('hv2ReviewBody')}
         </Item>
         <Item icon="💳" title={t('helpItemPaymentMethodsTitle')}
           preview={<div className="help-pay-row">
@@ -138,9 +135,8 @@ export default function Help() {
         <Item icon="➕" title={t('helpItemAddProductBtnTitle')}>
           {t('helpItemAddProductBtnBody')}
         </Item>
-        <Item icon="📊" title={t('helpItemStockBarTitle')}
-          preview={<div className="prod-bar-wrap"><div className="prod-bar" style={{ width: '35%', background: 'var(--yellow)' }} /></div>}>
-          {t('helpItemStockBarBody')}
+        <Item icon="📷" title={t('hv2PhotosTitle')}>
+          {t('hv2PhotosBody')}
         </Item>
         <Item icon="🔁" title={t('helpItemRestockBtnTitle')}>
           {t('helpItemRestockBtnBody')}
@@ -160,6 +156,12 @@ export default function Help() {
         </Item>
         <Item icon="💬" title={t('helpItemWaReminderTitle')}>
           {t('helpItemWaReminderBody')}
+        </Item>
+        <Item icon="👤" title={t('hv2ProfileTitle')}>
+          {t('hv2ProfileBody')}
+        </Item>
+        <Item icon="📅" title={t('hv2DueDateTitle')}>
+          {t('hv2DueDateBody')}
         </Item>
       </Section>
 

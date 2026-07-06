@@ -820,7 +820,7 @@ function reducer(state, action) {
     }
 
     case 'COMPLETE_TRANSACTION': {
-      const { items, total, profit, mode, customer, amountPaid, balance } = action.payload
+      const { items, total, profit, mode, customer, amountPaid, balance, dueDate } = action.payload
 
       const products = state.products.map(p => {
         if (p.type === 'flexible') return p
@@ -843,6 +843,7 @@ function reducer(state, action) {
         customerPhone: customer?.phone || '',
         amountPaid,
         balance,
+        dueDate: mode === 'debt' && balance > 0 ? (dueDate || null) : null,
       }
 
       let customers = state.customers

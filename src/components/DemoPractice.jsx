@@ -256,7 +256,7 @@ export default function DemoPractice() {
       {step === 0 && (
         <PracticeIntroCard
           onStart={handleStart}
-          onSkip={() => finish(true)}
+          onSkip={() => finish(false)}
         />
       )}
 

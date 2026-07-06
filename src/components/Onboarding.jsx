@@ -29,47 +29,27 @@ const STEPS = [
     btnKey: 'ob1WelcomeBtn',
   },
 
-  // 2 — Home: Today's summary (auto-nav to home)
+  // Home: Today's summary cards (auto-nav to home)
   {
     type: 'spot',
     view: 'home',
-    target: '.home-today',
+    target: '.home-summary',
     icon: '📋',
     titleKey: 'ob2TodaySummaryTitle',
     bodyKey: 'ob2TodaySummaryBody',
   },
 
-  // 3 — Home: 4 navigation tiles
+  // Bottom navigation bar
   {
     type: 'spot',
     view: 'home',
-    target: '.home-grid',
-    icon: '🗂️',
-    titleKey: 'ob3QuickTilesTitle',
-    bodyKey: 'ob3QuickTilesBody',
+    target: '.tabs-mobile',
+    icon: '🧭',
+    titleKey: 'obV2NavTitle',
+    bodyKey: 'obV2NavBody',
   },
 
-  // 4 — Home: Settings row
-  {
-    type: 'spot',
-    view: 'home',
-    target: '.home-settings-row',
-    icon: '⚙️',
-    titleKey: 'ob4SettingsTitle',
-    bodyKey: 'ob4SettingsBody',
-  },
-
-  // 5 — Home: Header — language + theme buttons
-  {
-    type: 'spot',
-    view: 'home',
-    target: '.home-header',
-    icon: '🌍',
-    titleKey: 'ob5LangDisplayTitle',
-    bodyKey: 'ob5LangDisplayBody',
-  },
-
-  // 6 — TAP: Sell button → user taps it to go to sell screen
+  // TAP: Sell button → user taps it to go to sell screen
   {
     type: 'tap',
     view: 'home',
@@ -80,14 +60,25 @@ const STEPS = [
     bodyKey: 'ob6SellBtnBody',
   },
 
-  // 7 — Sell: Search bar
+  // Sell: Search bar
   {
     type: 'spot',
     view: 'sell',
-    target: '.pos-search-input',
+    target: '.pos-search-field',
     icon: '🔍',
     titleKey: 'ob7SearchTitle',
     bodyKey: 'ob7SearchBody',
+  },
+
+  // Sell: Category chips
+  {
+    type: 'spot',
+    view: 'sell',
+    target: '.pos-chips',
+    fallback: true,
+    icon: '🏷️',
+    titleKey: 'obV2ChipsTitle',
+    bodyKey: 'obV2ChipsBody',
   },
 
   // 8 — Sell: Product rows
@@ -112,7 +103,17 @@ const STEPS = [
     bodyKey: 'ob9PinBody',
   },
 
-  // 10 — Card: Payment methods
+  // Card: Review Sale flow
+  {
+    type: 'card',
+    color: '#0F6B63',
+    icon: '🧾',
+    titleKey: 'obV2ReviewTitle',
+    bodyKey: 'obV2ReviewBody',
+    btnKey: 'obContinueBtn',
+  },
+
+  // Card: Payment methods
   {
     type: 'card',
     color: '#1864ab',
@@ -142,25 +143,25 @@ const STEPS = [
     bodyKey: 'ob12GoProductsBody',
   },
 
-  // 13 — Products: Add button
+  // Products: Add button
   {
     type: 'spot',
     view: 'products',
-    target: '.screen-top-actions .button',
+    target: '.prod-tool-btn--primary',
     icon: '➕',
     titleKey: 'ob13AddProductTitle',
     bodyKey: 'ob13AddProductBody',
   },
 
-  // 14 — Products: Stock bar
+  // Products: Summary footer (totals + low stock → bulk restock)
   {
     type: 'spot',
     view: 'products',
-    target: '.prod-bar-wrap',
+    target: '.prod-summary',
     fallback: true,
     icon: '📊',
-    titleKey: 'ob14StockBarsTitle',
-    bodyKey: 'ob14StockBarsBody',
+    titleKey: 'obV2ProdSummaryTitle',
+    bodyKey: 'obV2ProdSummaryBody',
   },
 
   // 15 — TAP: Customers tab in bottom nav
@@ -458,7 +459,7 @@ function TapStep({ step, stepNum, total, onNext }) {
 // Root — manages step index with localStorage persistence
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Onboarding() {
-  const { dispatch, activeProfile, switchProfile } = useStore()
+  const { dispatch, activeProfile } = useStore()
   const t = useLang()
 
   const [idx, setIdx] = useState(() => {
@@ -481,17 +482,15 @@ export default function Onboarding() {
     }
   }, [idx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function done(skipped = false) {
+  function done() {
     // Skipping or finishing either counts as "seen" — the tour never shows
-    // again after this, in demo or in the user's real shop.
+    // again after this, in demo or in the user's real shop. Either way the
+    // user stays exactly where they are (skipping in demo keeps them in the
+    // demo shop — never bounce them back to the welcome screen).
     localStorage.removeItem(OB_STEP_KEY)
     localStorage.setItem(OB_DONE_KEY, '1')
     dispatch({ type: 'COMPLETE_ONBOARDING' })
-    if (activeProfile === 'demo' && skipped) {
-      // Skip in demo → go straight back to main account
-      switchProfile('main')
-    }
-    // Completing the demo tour (not skipped) hands off to DemoPractice for the practice sale
+    // Completing the demo tour hands off to DemoPractice for the practice sale
   }
 
   function next() {
@@ -506,7 +505,7 @@ export default function Onboarding() {
       {/* Blocks all app interactions during the tour; only tour UI sits above this */}
       <div className="ob-blocker" />
       {!step.isLast && (
-        <button className="ob-skip-btn" onClick={() => done(true)}>{t('obSkipTourBtn')}</button>
+        <button className="ob-skip-btn" onClick={() => done()}>{t('obSkipTourBtn')}</button>
       )}
 
       {step.type === 'card' && (

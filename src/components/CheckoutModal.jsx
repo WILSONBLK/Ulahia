@@ -26,6 +26,7 @@ export default function CheckoutModal() {
   const [amountReceived, setAmountReceived] = useState('')
   const [discountType, setDiscountType] = useState(activeOrder.discount?.type || null)
   const [discountValue, setDiscountValue] = useState(activeOrder.discount?.value ? String(activeOrder.discount.value) : '')
+  const [dueDate, setDueDate] = useState('')
 
   const rawItems = activeOrder.items.map(i => ({ ...i, subtotal: i.price * i.qty }))
   const rawTotal = rawItems.reduce((sum, i) => sum + i.subtotal, 0)
@@ -91,11 +92,12 @@ export default function CheckoutModal() {
       customerPhone: customer?.phone || '',
       amountPaid,
       balance: finalBalance,
+      dueDate: mode === 'debt' && finalBalance > 0 ? (dueDate || null) : null,
     }
 
     dispatch({
       type: 'COMPLETE_TRANSACTION',
-      payload: { items, total, profit: Math.max(0, profit), mode, customer, amountPaid, balance: finalBalance },
+      payload: { items, total, profit: Math.max(0, profit), mode, customer, amountPaid, balance: finalBalance, dueDate },
     })
 
     // Haptic feedback
@@ -285,6 +287,16 @@ export default function CheckoutModal() {
                 <strong>{money(balance)}</strong>
               </div>
             </div>
+          </div>
+          <div className="co-section">
+            <div className="co-label">{t('coDueDateLabel')} <span style={{ fontWeight: 400, color: 'var(--muted)', textTransform: 'none', letterSpacing: 0 }}>({t('optional')})</span></div>
+            <input
+              className="field"
+              type="date"
+              min={new Date().toISOString().slice(0, 10)}
+              value={dueDate}
+              onChange={e => setDueDate(e.target.value)}
+            />
           </div>
         </>
       )}
