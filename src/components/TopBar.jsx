@@ -1,5 +1,6 @@
 import { useStore } from '../store.jsx'
 import { useLang } from '../useLang.js'
+import { useTopBarActionsValue } from '../topbarActions.jsx'
 
 const TITLE_KEYS = {
   customers: 'navCustomers',
@@ -18,6 +19,7 @@ const TITLE_KEYS = {
 export default function TopBar() {
   const { state, dispatch } = useStore()
   const t = useLang()
+  const actions = useTopBarActionsValue()
 
   // Detail views go back to their parent list; everything else to Home.
   const BACK_TO = { customer: 'customers' }
@@ -34,8 +36,10 @@ export default function TopBar() {
         ←
       </button>
       <strong className="topbar-title" title={title}>{title}</strong>
-      {/* Balances the back button so the title stays centred */}
-      <span className="topbar-spacer" aria-hidden="true" />
+      {/* Per-screen actions (add, scan, …) — or a spacer to keep the title centred */}
+      {actions
+        ? <div className="topbar-actions">{actions}</div>
+        : <span className="topbar-spacer" aria-hidden="true" />}
     </header>
   )
 }

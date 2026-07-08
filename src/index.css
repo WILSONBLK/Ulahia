@@ -6497,3 +6497,34 @@ body { font-size: 1rem; }
 .home-quick-label { font-family: var(--font-head); font-weight: 700; font-size: 0.98rem; }
 .home-quick-sub { color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-quick-sub--bad { color: var(--terracotta); font-weight: 700; }
+
+/* ══════════════════════════════════════
+   TOP BAR — per-screen action buttons
+══════════════════════════════════════ */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.topbar-action {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink);
+  flex-shrink: 0;
+  transition: transform 0.1s, background 0.12s;
+}
+.topbar-action:active { transform: scale(0.94); }
+.topbar-action--primary {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+.topbar-action--primary:active { background: var(--green-2); }
+.app--dark .topbar-action { background: #1E2426; border-color: var(--line); }
+.app--dark .topbar-action--primary { background: var(--green); border-color: var(--green); }

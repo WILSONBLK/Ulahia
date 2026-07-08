@@ -4,6 +4,8 @@ import { useLang } from '../useLang.js'
 import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money, filterByPeriod } from '../utils.js'
+import { useTopBarActions } from '../topbarActions.jsx'
+import { IconPlus } from './icons.jsx'
 
 export const EXPENSE_CATEGORIES = ['transport', 'rent', 'salary', 'fuel', 'utilities', 'other']
 
@@ -128,6 +130,19 @@ export default function Expenses() {
     showToast(t('withdrawalRemovedToast'), { undo: () => dispatch({ type: 'RESTORE_WITHDRAWAL', payload: w }) })
   }
 
+  // Add expense / withdrawal button lives in the top bar
+  useTopBarActions(
+    <button
+      className="topbar-action topbar-action--primary"
+      aria-label={tab === 'expenses' ? t('addExpense') : t('addWithdrawal')}
+      title={tab === 'expenses' ? t('addExpense') : t('addWithdrawal')}
+      onClick={() => openModal(tab === 'expenses' ? <ExpenseFormModal /> : <WithdrawalFormModal />)}
+    >
+      <IconPlus size={20} />
+    </button>,
+    [tab]
+  )
+
   return (
     <section className="section">
       <div className="section-head">
@@ -135,17 +150,11 @@ export default function Expenses() {
           <span className="section-kicker">{tab === 'expenses' ? t('expenses') : t('withdrawals')}</span>
           <h2>{money(total)}</h2>
         </div>
-        <button
-          className="button"
-          onClick={() => openModal(tab === 'expenses' ? <ExpenseFormModal /> : <WithdrawalFormModal />)}
-        >
-          {tab === 'expenses' ? t('addExpense') : t('addWithdrawal')}
-        </button>
       </div>
 
-      <div className="segmented-tabs">
-        <button className={`segmented-tab${tab === 'expenses' ? ' is-active' : ''}`} onClick={() => setTab('expenses')}>{t('expenses')}</button>
-        <button className={`segmented-tab${tab === 'withdrawals' ? ' is-active' : ''}`} onClick={() => setTab('withdrawals')}>{t('withdrawals')}</button>
+      <div className="seg-tabs">
+        <button className={`seg-tab${tab === 'expenses' ? ' is-active' : ''}`} onClick={() => setTab('expenses')}>{t('expenses')}</button>
+        <button className={`seg-tab${tab === 'withdrawals' ? ' is-active' : ''}`} onClick={() => setTab('withdrawals')}>{t('withdrawals')}</button>
       </div>
 
       <div className="report-periods">

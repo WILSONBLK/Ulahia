@@ -5,6 +5,7 @@ import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
 import { useLang } from '../useLang.js'
 import { usePinGate } from './PinGate.jsx'
+import { useTopBarActions } from '../topbarActions.jsx'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
 import ProductForm from './ProductForm.jsx'
 import RestockModal from './RestockModal.jsx'
@@ -91,10 +92,23 @@ export default function Products() {
   const usedCategories = new Set(state.products.map(p => p.category).filter(Boolean))
   const chips = [{ id: 'all', key: 'catAll' }, ...CATEGORIES.filter(c => usedCategories.has(c.id))]
 
+  // Scan + Add live in the top bar so the list has room to breathe
+  useTopBarActions(
+    <>
+      <button className="topbar-action" aria-label={t('scanBtn')} title={t('scanBtn')} onClick={() => openModal(<BarcodeScanner />)}>
+        <IconCamera size={20} />
+      </button>
+      <button className="topbar-action topbar-action--primary" aria-label={t('addProduct')} title={t('addProduct')} onClick={() => requirePin(() => openModal(<ProductForm />))}>
+        <IconPlus size={20} />
+      </button>
+    </>,
+    []
+  )
+
   return (
     <div className="screen-content">
 
-      {/* Search + quick actions */}
+      {/* Search */}
       <div className="prod-toolbar">
         <span className="pos-search-field">
           <span className="pos-search-icon"><IconSearch size={19} /></span>
@@ -106,12 +120,6 @@ export default function Products() {
             autoComplete="off"
           />
         </span>
-        <button className="prod-tool-btn" aria-label={t('scanBtn')} title={t('scanBtn')} onClick={() => openModal(<BarcodeScanner />)}>
-          <IconCamera size={20} />
-        </button>
-        <button className="prod-tool-btn prod-tool-btn--primary" aria-label={t('addProduct')} title={t('addProduct')} onClick={() => requirePin(() => openModal(<ProductForm />))}>
-          <IconPlus size={20} />
-        </button>
       </div>
 
       {/* Category chips */}

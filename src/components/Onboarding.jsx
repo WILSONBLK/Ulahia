@@ -147,7 +147,7 @@ const STEPS = [
   {
     type: 'spot',
     view: 'products',
-    target: '.prod-tool-btn--primary',
+    target: '.topbar-action--primary',
     icon: '➕',
     titleKey: 'ob13AddProductTitle',
     bodyKey: 'ob13AddProductBody',

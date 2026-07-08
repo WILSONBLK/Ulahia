@@ -4,6 +4,7 @@ import { useLang } from '../useLang.js'
 import { useModal } from '../modal.jsx'
 import { useToast } from '../toast.jsx'
 import { money } from '../utils.js'
+import { useTopBarActions } from '../topbarActions.jsx'
 import { IconChat, IconSearch, IconUserPlus } from './icons.jsx'
 
 function AddCustomerModal() {
@@ -115,6 +116,19 @@ export default function Customers() {
   const owingCount = state.customers.filter(c => c.totalBalance > 0).length
   const clearCount = state.customers.length - owingCount
 
+  // Add-customer button lives in the top bar so the list can breathe
+  useTopBarActions(
+    <button
+      className="topbar-action topbar-action--primary"
+      aria-label={t('rsAddCustomer')}
+      title={t('rsAddCustomer')}
+      onClick={() => openModal(<AddCustomerModal />)}
+    >
+      <IconUserPlus size={20} />
+    </button>,
+    []
+  )
+
   const filtered = state.customers
     .filter(c =>
       tab === 'all' ? true :
@@ -150,14 +164,6 @@ export default function Customers() {
             autoComplete="off"
           />
         </span>
-        <button
-          className="prod-tool-btn prod-tool-btn--primary"
-          aria-label={t('rsAddCustomer')}
-          title={t('rsAddCustomer')}
-          onClick={() => openModal(<AddCustomerModal />)}
-        >
-          <IconUserPlus size={20} />
-        </button>
       </div>
 
       <div className="seg-tabs">
