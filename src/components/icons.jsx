@@ -324,6 +324,13 @@ export const IconEyeOff = (p) => (
   </Icon>
 )
 
+export const IconReceipt = (p) => (
+  <Icon {...p}>
+    <path d="M5 3.5h14v17l-2.3-1.5-2.3 1.5-2.4-1.5-2.4 1.5-2.3-1.5L5 20.5V3.5Z" />
+    <path d="M8.5 8h7M8.5 12h7M8.5 16h4" />
+  </Icon>
+)
+
 export const IconX = (p) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="9" />

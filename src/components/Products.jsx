@@ -9,9 +9,9 @@ import { useTopBarActions } from '../topbarActions.jsx'
 import { CATEGORIES, CATEGORY_KEY } from '../categories.js'
 import ProductForm from './ProductForm.jsx'
 import RestockModal from './RestockModal.jsx'
-import BarcodeScanner from './BarcodeScanner.jsx'
+import InvoiceImport from './InvoiceImport.jsx'
 import ProductThumb from './ProductThumb.jsx'
-import { IconSearch, IconCamera, IconPlus, IconMore, IconChevron, IconBox } from './icons.jsx'
+import { IconSearch, IconReceipt, IconPlus, IconMore, IconChevron, IconBox } from './icons.jsx'
 
 function getRecovery(product, transactions) {
   const totalSold = transactions
@@ -92,11 +92,11 @@ export default function Products() {
   const usedCategories = new Set(state.products.map(p => p.category).filter(Boolean))
   const chips = [{ id: 'all', key: 'catAll' }, ...CATEGORIES.filter(c => usedCategories.has(c.id))]
 
-  // Scan + Add live in the top bar so the list has room to breathe
+  // Import invoice + Add live in the top bar so the list has room to breathe
   useTopBarActions(
     <>
-      <button className="topbar-action" aria-label={t('scanBtn')} title={t('scanBtn')} onClick={() => openModal(<BarcodeScanner />)}>
-        <IconCamera size={20} />
+      <button className="topbar-action" aria-label={t('importInvoice')} title={t('importInvoice')} onClick={() => openModal(<InvoiceImport />)}>
+        <IconReceipt size={20} />
       </button>
       <button className="topbar-action topbar-action--primary" aria-label={t('addProduct')} title={t('addProduct')} onClick={() => requirePin(() => openModal(<ProductForm />))}>
         <IconPlus size={20} />
